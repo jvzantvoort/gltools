@@ -5,6 +5,8 @@
 """
 import sys
 import os
+import logging
+
 try:
     import ConfigParser as configparser
 except ImportError:
@@ -45,6 +47,7 @@ class Config(object):
 
         self.configfile = kwargs.get('configfile',
                                      os.path.expanduser('~/.python-gitlab.cfg'))
+        self.logger = kwargs.get('logger', logging.getLogger('gltools'))
 
         self.config = configparser.RawConfigParser()
 
@@ -54,98 +57,44 @@ class Config(object):
 
     @property
     def default(self):
-        """short description
+        """return the default section
 
-        extended description
-
-        :param arg1: the first value
-        :param arg2: the first value
-        :param arg3: the first value
-        :type arg1: int, float,...
-        :type arg2: int, float,...
-        :type arg3: int, float,...
-        :returns: arg1/arg2 +arg3
-        :rtype: int, float
-
-        Example::
-
-          lala
-
-        .. note:: can be useful to emphasize
-            important feature
-        .. seealso:: :class:
-        .. warning:: arg2 must be non-zero.
-        .. todo:: check that arg2 is non zero.
+        :returns: default section
+        :rtype: str
         """
         return self.config.get('global', 'default')
 
     def initconfig(self):
-        """short description
+        """initialize an empty conifguration
 
-        extended description
-
-        :param arg1: the first value
-        :param arg2: the first value
-        :param arg3: the first value
-        :type arg1: int, float,...
-        :type arg2: int, float,...
-        :type arg3: int, float,...
-        :returns: arg1/arg2 +arg3
-        :rtype: int, float
-
-        Example::
-
-          lala
-
-        .. note:: can be useful to emphasize
-            important feature
-        .. seealso:: :class:
-        .. warning:: arg2 must be non-zero.
-        .. todo:: check that arg2 is non zero.
         """
 
         if not self.config.has_section('global'):
+            self.logger.debug("adding required section 'global'")
             self.config.add_section('global')
 
         for k, v in self.globalopts.items():
             if k in self._args:
+                self.logger.debug("adding %s (value: %s) to global from arguments" % (k, kwargs[k]))
                 self.config.set('global', k, kwargs[k])
             else:
+                self.logger.debug("adding %s (value: %s) to global from defaults" % (k, kwargs[k]))
                 self.config.set('global', k, v)
 
         if not self.config.has_section(self.default):
+            self.logger.debug("adding section '%s'" % self.default)
             self.config.add_section(self.default)
 
         for k, v in self.sectionopts.items():
             if k in self._args:
+                self.logger.debug("adding %s (value: %s) to %s from arguments" % (k, kwargs[k]), self.default)
                 self.config.set(self.default, k, kwargs[k])
             else:
+                self.logger.debug("adding %s (value: %s) to %s from section opts" % (k, kwargs[k]), self.default)
                 self.config.set(self.default, k, v)
 
     def dump(self):
-        """short description
-
-        extended description
-
-        :param arg1: the first value
-        :param arg2: the first value
-        :param arg3: the first value
-        :type arg1: int, float,...
-        :type arg2: int, float,...
-        :type arg3: int, float,...
-        :returns: arg1/arg2 +arg3
-        :rtype: int, float
-
-        Example::
-
-          lala
-
-        .. note:: can be useful to emphasize
-            important feature
-        .. seealso:: :class:
-        .. warning:: arg2 must be non-zero.
-        .. todo:: check that arg2 is non zero.
-        """
+        """Write the ini file content."""
         self.config.write(sys.stdout)
 
     def sect_global(self, name, varval):
