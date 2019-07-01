@@ -24,7 +24,7 @@ setup(
     url='https://github.com/jvzantvoort/gltools',
     packages=find_packages(exclude=['docs', 'docs-src', 'tests']),
     install_requires=['requests'],
-    scripts=['bin/gl-export-group'],
+    scripts=['bin/gl-export-group', 'bin/gl-setup-group'],
     license='MIT',
     test_suite="tests",
     classifiers=[

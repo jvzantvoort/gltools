@@ -1,0 +1,128 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""gl-setup-group - checkout all 
+
+Copyright (C) 2019 John van Zantvoort
+"""
+
+import argparse
+import sys
+import os
+import os.path as osp
+import logging
+
+
+LOGFILE = osp.join(osp.expanduser('~'), osp.basename(__file__) + ".log")
+SCRIPTNAME = osp.dirname(osp.dirname(osp.abspath(__file__)))
+sys.path.insert(0, SCRIPTNAME)
+
+from gltools.exceptions import GLToolsException
+from gltools.main import WorkOnGroup
+from gltools.version import __version__
+
+__author__ = "John van Zantvoort"
+__copyright__ = "Proxy B.V."
+__email__ = "john.van.zantvoort@proxy.nl"
+__license__ = "MIT"
+
+
+logger = logging.getLogger('gltools')
+logger.setLevel(logging.DEBUG)
+
+consolehandler = logging.StreamHandler(sys.stdout)
+consolehandler.setFormatter(logging.Formatter("%(levelname)s %(funcName)s:  %(message)s"))
+consolehandler.setLevel(logging.DEBUG)
+logger.addHandler(consolehandler)
+
+logfilehandler = logging.FileHandler(LOGFILE)
+logfilehandler.setFormatter(logging.Formatter("%(levelname)s %(funcName)s: %(message)s"))
+logfilehandler.setLevel(logging.DEBUG)
+logger.addHandler(logfilehandler)
+
+def parse_args(args):
+    """
+    Parse command line parameters
+
+    :param args: command line parameters as list of strings
+    :return: command line parameters as :obj:`argparse.Namespace`
+    """
+    retv = dict()
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        '--version',
+        action='version',
+        version='export-this {ver}'.format(ver=__version__))
+
+    parser.add_argument(
+            '-g', '--gitlab',
+            dest="GITLAB",
+            help="Which configuration section should be used"
+            )
+
+    parser.add_argument(
+            '-o', '--workdir',
+            dest="WORKDIR",
+            default=osp.expanduser('~/Workspace'),
+            help="There the export shut be put"
+            )
+
+    parser.add_argument(
+            '-l', '--list',
+            action="store_true",
+            dest="SWLIST",
+            help="List groups")
+
+    parser.add_argument(
+            '--http',
+            action="store_true",
+            dest="HTTP",
+            help="Use http urls i.s.o. ssh in project listing")
+
+    parser.add_argument(
+            '--groupname',
+            dest="GROUPNAME",
+            help="Set groupname")
+
+    parser.add_argument('group', nargs='?')
+
+    opts = vars(parser.parse_args(args))
+
+    for keyn, keyv in opts.items():
+        if keyv is not None:
+            retv[keyn] = keyv
+
+    try:
+        if isinstance(retv["group"], list):
+            retv["group"] = retv["group"][0]
+    except KeyError:
+        pass
+
+    return retv
+
+
+def main(args):
+    args = parse_args(args)
+    csection = args.get("GITLAB")
+    groupname = args.get("GROUPNAME")
+    workdir = args.get("WORKDIR")
+    logger.info("START")
+    args['logger'] = logger
+
+    glt = WorkOnGroup(**args)
+    if not glt.check_gitlab_section():
+        sys.exit(1)
+
+    if not glt.check_gitlab_group():
+        sys.exit(2)
+
+    glt.main()
+    logging.info("END")
+
+
+if __name__ == "__main__":
+    try:
+        main(sys.argv[1:])
+    except GLToolsException as exp:
+        print(exp)
+        sys.exit(1)
