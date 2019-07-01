@@ -11,7 +11,7 @@ setup_path_dir = os.path.dirname(setup_path)
 
 exec(open(os.path.join(setup_path_dir, 'gltools', 'version.py')).read())
 
-long_description = open(os.path.join(setup_path_dir, 'README.md')).read()
+long_description = open(os.path.join(setup_path_dir, 'README.txt')).read()
 
 setup(
     name='gltools',
@@ -23,7 +23,7 @@ setup(
     author_email='john.van.zantvoort@proxy.nl',
     url='https://github.com/jvzantvoort/gltools',
     packages=find_packages(exclude=['docs', 'docs-src', 'tests']),
-    install_requires=['requests'],
+    install_requires=['python-gitlab'],
     scripts=['bin/gl-export-group', 'bin/gl-setup-group'],
     license='MIT',
     test_suite="tests",
