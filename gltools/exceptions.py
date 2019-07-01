@@ -1,0 +1,4 @@
+
+
+class GLToolsException(Exception):
+    pass
