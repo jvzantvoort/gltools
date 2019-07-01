@@ -8,10 +8,12 @@ Copyright (C) 2019 John van Zantvoort
 import argparse
 import sys
 import os
+import os.path as osp
 import logging
 
 
-SCRIPTNAME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LOGFILE = osp.join(osp.expanduser('~'), osp.basename(__file__) + ".log")
+SCRIPTNAME = osp.dirname(osp.dirname(osp.abspath(__file__)))
 sys.path.insert(0, SCRIPTNAME)
 
 from gltools.localgitlab import LocalGitLab
@@ -62,13 +64,18 @@ ImZhaWxlZCB0byBoYW5kbGUgJFRZUEUiOyBleGl0IDggOzsKZXNhYwoKcG9wZApwb3BkCg==
 """
 
 
-rootlogger = logging.getLogger('gltools')
-rootlogger.setLevel(logging.DEBUG)
+logger = logging.getLogger('gltools')
+logger.setLevel(logging.DEBUG)
 
 consolehandler = logging.StreamHandler(sys.stdout)
 consolehandler.setFormatter(logging.Formatter("%(levelname)s %(funcName)s:  %(message)s"))
-consolehandler.setLevel(logging.INFO)
-rootlogger.addHandler(consolehandler)
+consolehandler.setLevel(logging.DEBUG)
+logger.addHandler(consolehandler)
+
+logfilehandler = logging.FileHandler(LOGFILE)
+logfilehandler.setFormatter(logging.Formatter("%(levelname)s %(funcName)s: %(message)s"))
+logfilehandler.setLevel(logging.DEBUG)
+logger.addHandler(logfilehandler)
 
 def parse_args(args):
     """
@@ -150,9 +157,7 @@ def main(args):
     csection = args.get("GITLAB")
     groupname = args.get("GROUPNAME")
     outputdir = args.get("OUTPUTDIR")
-
-    do_list = args.get('SWLIST')
-    do_http = args.get('HTTP')
+    logger.info("START")
     args['scriptbase64'] = SCRIPTBASE64
 
     glt = ExportGroup(**args)
@@ -163,6 +168,7 @@ def main(args):
         sys.exit(2)
 
     glt.main()
+    logging.info("END")
 
 
 if __name__ == "__main__":
