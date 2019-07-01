@@ -61,10 +61,10 @@ def parse_args(args):
             )
 
     parser.add_argument(
-            '-o', '--workdir',
+            '-w', '--workdir',
             dest="WORKDIR",
             default=osp.expanduser('~/Workspace'),
-            help="There the export shut be put"
+            help="Where the group should be maintained"
             )
 
     parser.add_argument(
@@ -84,30 +84,20 @@ def parse_args(args):
             dest="GROUPNAME",
             help="Set groupname")
 
-    parser.add_argument('group', nargs='?')
-
     opts = vars(parser.parse_args(args))
 
     for keyn, keyv in opts.items():
         if keyv is not None:
             retv[keyn] = keyv
 
-    try:
-        if isinstance(retv["group"], list):
-            retv["group"] = retv["group"][0]
-    except KeyError:
-        pass
-
     return retv
 
 
 def main(args):
     args = parse_args(args)
-    csection = args.get("GITLAB")
-    groupname = args.get("GROUPNAME")
-    workdir = args.get("WORKDIR")
-    logger.info("START")
     args['logger'] = logger
+
+    logger.info("START")
 
     glt = WorkOnGroup(**args)
     if not glt.check_gitlab_section():

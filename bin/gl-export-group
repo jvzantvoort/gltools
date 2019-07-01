@@ -135,30 +135,20 @@ def parse_args(args):
             dest="GROUPNAME",
             help="Set groupname")
 
-    parser.add_argument('group', nargs='?')
-
     opts = vars(parser.parse_args(args))
 
     for keyn, keyv in opts.items():
         if keyv is not None:
             retv[keyn] = keyv
 
-    try:
-        if isinstance(retv["group"], list):
-            retv["group"] = retv["group"][0]
-    except KeyError:
-        pass
-
     return retv
 
 
 def main(args):
     args = parse_args(args)
-    csection = args.get("GITLAB")
-    groupname = args.get("GROUPNAME")
-    outputdir = args.get("OUTPUTDIR")
-    logger.info("START")
+    args['logger'] = logger
     args['scriptbase64'] = SCRIPTBASE64
+    logger.info("START")
 
     glt = ExportGroup(**args)
     if not glt.check_gitlab_section():
