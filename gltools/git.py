@@ -1,22 +1,26 @@
-"""
-
-.. todo:: finish documenting
-
-"""
 import re
 import os
 import subprocess
 import logging
 
+from .exceptions import GLToolsException
+
 class Git(object):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         self._topdir = None
         self._path = None
         self._remote_origin_url = None
+        self.logger = kwargs.get('logger', logging.getLogger('gltools'))
 
     @property
     def topdir(self):
+        """returns the top most directory of the git project
+
+        :rtype: str
+
+        .. note:: uses the current working directory
+        """
         if self._topdir:
             return self._topdir
 
@@ -26,6 +30,12 @@ class Git(object):
 
     @property
     def remote_origin_url(self):
+        """returns the remote url of the project
+
+        :rtype: str
+
+        .. note:: uses the current working directory
+        """
         if self._remote_origin_url:
             return self._remote_origin_url
 
@@ -38,6 +48,7 @@ class Git(object):
         """
 
         .. todo:: patterns are not done yet
+
         """
         pattern_ssh = re.compile(r"^(?P<user>.*?)@(?P<hostname>.*):(?P<path>.*)$")
         pattern_http = re.compile(r"^(https|http)://(?P<hostname>.*?)/(?P<path>.*)$")
@@ -51,6 +62,7 @@ class Git(object):
 
     @property
     def path(self):
+        """return the content of the ``PATH`` variable as a list"""
         if self._path:
             return self._path
         path = os.environ["PATH"].split(os.pathsep)
@@ -61,6 +73,13 @@ class Git(object):
         return self._path
 
     def which(self, executeable):
+        """get the full path of a command
+
+        :param executeable: the first value
+        :type executeable: int, float,...
+        :returns: full path of the command or None
+        :rtype: str
+        """
         for path in self.path:
             executeable_path = os.path.join(path, executeable)
             if os.path.exists(executeable_path):
@@ -69,24 +88,39 @@ class Git(object):
 
         return executeable
 
-    def git(self, *args):
+    def git(self, *args, **kwargs):
+        """wrapper for the ``git`` command
+
+        :param args: arguments for the command
+        :param kwargs: extra options
+        :type args: list of strings
+        :type kwargs: dict
+        :returns: stdout lines as a list if sucessful
+        :rtype: list
+        :raise: GLToolsException on fail
+        """
         retv = list()
         command = list()
         command.append(self.which('git'))
         [command.append(x) for x in args]
 
-        process = subprocess.Popen(command,
-                                   stderr=subprocess.STDOUT,
-                                   stdout=subprocess.PIPE
-                                  )
-        stdoutdata = process.communicate()[0]
+        cmd_args = {
+                    'stderr': subprocess.STDOUT,
+                    'stdout': subprocess.PIPE
+                   }
+        for kname, kvalue in kwargs.items():
+            cmd_args[kname] = kvalue
+
+        process = subprocess.Popen(command, **cmd_args)
+        stdoutdata, stderrdata = process.communicate()
         if len(stdoutdata.strip()) > 0:
             for line in stdoutdata.split('\n'):
                 line = line.strip('\n')
-                logging.debug(line)
+                self.logger.debug(line)
                 retv.append(line)
         returncode = process.returncode
 
-        if returncode != 0:
-            raise IOError(retv[0])
-        return retv
+        if returncode == 0:
+            return retv
+
+        raise GLToolsException("%s\n\n%s" % (stderrdata, stdoutdata))
