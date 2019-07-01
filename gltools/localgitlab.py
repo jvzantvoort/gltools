@@ -14,10 +14,10 @@ except ImportError:
 class LocalGitLab(object):
     """Wrapper for the ``gitlab`` library
 
-    :param section: 
+    :param server: 
     :param groupname: description
 
-    :type section: str
+    :type server: str
     :type groupname: str
 
 
@@ -29,14 +29,14 @@ class LocalGitLab(object):
 
     def __init__(self, **kwargs):
 
-        self.section = "local"
+        self.server = "local"
         self.groupname = "default"
 
-        props = ('section', 'groupname')
+        props = ('server', 'groupname')
         for prop in props:
             if prop in kwargs:
                 setattr(self, prop, kwargs[prop])
-        self._gitlab = gitlab.Gitlab.from_config(self.section)
+        self._gitlab = gitlab.Gitlab.from_config(self.server)
         self._groups = list()
 
         self.logger = kwargs.get('logger', logging.getLogger('gltools'))

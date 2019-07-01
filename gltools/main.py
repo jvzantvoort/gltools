@@ -79,7 +79,7 @@ class Main(object):
     def check_gitlab_group(self):
 
         if self._lgitlab is None:
-            self._lgitlab = LocalGitLab(section=self.gitlab)
+            self._lgitlab = LocalGitLab(server=self.gitlab)
 
         self.group = self._lgitlab.getgroup(self.groupname)
 
@@ -95,7 +95,7 @@ class Main(object):
 
     def getprojects(self):
         if self._lgitlab is None:
-            self._lgitlab = LocalGitLab(section=self.gitlab)
+            self._lgitlab = LocalGitLab(server=self.gitlab)
 
         return self._lgitlab.grouptree(self.groupname)
 
@@ -275,7 +275,7 @@ class ExportGroup(object):
 
     def check_gitlab_group(self):
 
-        self._lgitlab = LocalGitLab(section=self.gitlab)
+        self._lgitlab = LocalGitLab(server=self.gitlab)
 
         self.group = self._lgitlab.getgroup(self.groupname)
 
