@@ -1,10 +1,7 @@
-.. gltools documentation master file, created by
-   sphinx-quickstart on Mon Jul  1 18:36:36 2019.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+GitLab Tools
+============
 
-Welcome to gltools's documentation!
-===================================
+Some scripts to aid in the use of gitlab
 
 Contents:
 
@@ -14,6 +11,7 @@ Contents:
 
    gltools/*
    *
+   bin/*
 
 
 Indices and tables
