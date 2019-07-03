@@ -39,6 +39,9 @@ class Main(object):
         self.gitlab = None
         self.groupname = None
 
+        self.extended = False
+        self.bundles = False
+
         for prop in props:
             if prop in kwargs:
                 propname = prop.lower()
@@ -93,11 +96,42 @@ class Main(object):
             return False
         return True
 
+    def ignore_extended(self, row):
+        path = row.get('path')
+
+        if self.extended:
+            self.logger.debug("is extended")
+            return False
+
+        if path.startswith('role-'):
+            self.logger.debug("exclude path: %s" % path)
+            return True
+
+        self.logger.debug("include path: %s" % path)
+        return False
+
     def getprojects(self):
+
+        retv = list()
+
         if self._lgitlab is None:
             self._lgitlab = LocalGitLab(server=self.gitlab)
 
-        return self._lgitlab.grouptree(self.groupname)
+        for row in self._lgitlab.grouptree(self.groupname):
+            if self.ignore_extended(row):
+                continue
+
+            row['type'] = "portable"
+            if self.bundles:
+                row['type'] = "bundle"
+
+            row['url'] = row.get('ssh_url_to_repo')
+            if self.http:
+                row['url'] = row.get('http_url_to_repo')
+
+            retv.append(row)
+
+        return retv
 
     def exec_script(self, scriptfile):
         """Execute a scriptfile
@@ -128,13 +162,13 @@ class Main(object):
 
         stdoutdata, stderrdata = process.communicate()
 
-        if len(stdoutdata.strip()) > 0:
+        if stdoutdata is not None and len(stdoutdata.strip()) > 0:
             for line in stdoutdata.split('\n'):
                 line = line.strip('\n')
                 self.logger.debug(">>  %s" % line)
                 retv.append(line)
 
-        if len(stderrdata.strip()) > 0:
+        if stderrdata is not None and len(stderrdata.strip()) > 0:
             for line in stderrdata.split('\n'):
                 line = line.strip('\n')
                 self.logger.error("!!  %s" % line)
@@ -152,7 +186,7 @@ class Main(object):
 class WorkOnGroup(Main):
 
     def __init__(self, **kwargs):
-        props = ("GITLAB", "GROUPNAME", "WORKDIR", "HTTP")
+        props = ("GITLAB", "GROUPNAME", "WORKDIR", "HTTP", "EXTENDED")
 
         self._config = None
         self._lgitlab = None
@@ -162,6 +196,8 @@ class WorkOnGroup(Main):
         self.groupname = None
         self.workdir = None
         self.http = False
+        self.extended = False
+        self.bundles = False
 
         self.repository = "origin"
         self.refspec = "master"
@@ -232,7 +268,7 @@ class WorkOnGroup(Main):
             self.setup_project(row)
 
 
-class ExportGroup(object):
+class ExportGroup(Main):
 
 
     def __init__(self, **kwargs):
@@ -259,89 +295,6 @@ class ExportGroup(object):
         self._scriptbase64 = kwargs.get('scriptbase64', "")
         self._scripttemplate = None
 
-    def check_gitlab_section(self):
-        self._config = Config()
-
-        if self.gitlab is None:
-            self.gitlab = self._config.default
-
-        if self.gitlab not in self._config.configs:
-            self.logger.error("Invalid config section called. Valid options are:")
-            for csect in self._config.configs:
-                self.logger.error(" - %s" % csect)
-            self.logger.error("     Check %s for more information" % self._config.configfile)
-            return False
-        return True
-
-    def check_gitlab_group(self):
-
-        self._lgitlab = LocalGitLab(server=self.gitlab)
-
-        self.group = self._lgitlab.getgroup(self.groupname)
-
-        if not self.group:
-            self.logger.error("Invalid group called. Valid options are:")
-            for groupsect in self._lgitlab.groups:
-                if groupsect.name != groupsect.path:
-                    print(" - %s (%s)" % (groupsect.name, groupsect.path))
-                else:
-                    print(" - %s" % groupsect.name)
-            return False
-        return True
-
-    def ignore_extended(self, row):
-        path = row.get('path')
-
-        if self.extended:
-            self.logger.debug("is extended")
-            return False
-
-        if path.startswith('role-'):
-            self.logger.debug("exclude path: %s" % path)
-            return True
-        self.logger.debug("include path: %s" % path)
-        return False
-
-    def getprojects(self):
-        retv = list()
-
-        for row in self._lgitlab.grouptree(self.groupname):
-            if self.ignore_extended(row):
-                continue
-
-            row['type'] = "portable"
-            if self.bundles:
-                row['type'] = "bundle"
-
-            row['url'] = row.get('ssh_url_to_repo')
-            if self.http:
-                row['url'] = row.get('http_url_to_repo')
-
-            retv.append(row)
-        return retv
-
-    def exec_script(self, scriptfile):
-        retv = list()
-        command = [scriptfile]
-        self.logger.info("  execute %s" % scriptfile)
-        process = subprocess.Popen(command,
-                                   stderr=subprocess.STDOUT,
-                                   stdout=subprocess.PIPE)
-        stdoutdata = process.communicate()[0]
-        if len(stdoutdata.strip()) > 0:
-            for line in stdoutdata.split('\n'):
-                line = line.strip('\n')
-                self.logger.debug(line)
-                retv.append(line)
-        returncode = process.returncode
-
-        if returncode != 0:
-            self.logger.info("  execute %s, failed" % scriptfile)
-            raise IOError(retv[0])
-
-        self.logger.info("  execute %s, success" % scriptfile)
-        return retv
-
     def export_project(self, row, outputdir, tempdir):
         row['outputdir'] = outputdir
         row['tempdir'] = tempdir
@@ -359,6 +312,23 @@ class ExportGroup(object):
         self.exec_script(outfile)
         os.unlink(outfile)
         self.logger.info("export %(name)s, end" % row)
+
+    def getprojects(self):
+
+        retv = list()
+
+        for row in super(ExportGroup, self).getprojects():
+
+            row['type'] = "portable"
+            if self.bundles:
+                row['type'] = "bundle"
+
+            row['url'] = row.get('ssh_url_to_repo')
+            if self.http:
+                row['url'] = row.get('http_url_to_repo')
+
+            retv.append(row)
+        return retv
 
     def main(self):
         tempdir = os.path.join(self.outputdir, "tmp")

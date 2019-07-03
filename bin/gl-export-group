@@ -16,8 +16,6 @@ LOGFILE = osp.join(osp.expanduser('~'), osp.basename(__file__) + ".log")
 SCRIPTNAME = osp.dirname(osp.dirname(osp.abspath(__file__)))
 sys.path.insert(0, SCRIPTNAME)
 
-from gltools.localgitlab import LocalGitLab
-from gltools.config import Config
 from gltools.exceptions import GLToolsException
 from gltools.main import ExportGroup
 from gltools.version import __version__
@@ -62,7 +60,6 @@ IHx8IGV4aXQgNgoKY2FzZSAkVFlQRSBpbiAKICBidW5kbGUpIG1rYnVuZGxlICIke09VVFBVVEZJ
 TEV9LmJ1bmRsZSI7OwogIHBvcnRhYmxlKSBhcmNoaXZlICIke1hQQVRIfSI7OwogICopIGVjaG8g
 ImZhaWxlZCB0byBoYW5kbGUgJFRZUEUiOyBleGl0IDggOzsKZXNhYwoKcG9wZApwb3BkCg==
 """
-
 
 logger = logging.getLogger('gltools')
 logger.setLevel(logging.DEBUG)
@@ -117,7 +114,6 @@ def parse_args(args):
             dest="BUNDLES",
             help="Export to bundles")
 
-
     parser.add_argument(
             '-e', '--extended',
             action="store_true",
@@ -158,7 +154,8 @@ def main(args):
         sys.exit(2)
 
     glt.main()
-    logging.info("END")
+
+    logger.info("END")
 
 
 if __name__ == "__main__":
