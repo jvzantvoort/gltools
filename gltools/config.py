@@ -75,10 +75,10 @@ class Config(object):
 
         for k, v in self.globalopts.items():
             if k in self._args:
-                self.logger.debug("adding %s (value: %s) to global from arguments" % (k, kwargs[k]))
-                self.config.set('global', k, kwargs[k])
+                self.logger.debug("adding %s (value: %s) to global from arguments" % (k, self._args[k]))
+                self.config.set('global', k, self._args[k])
             else:
-                self.logger.debug("adding %s (value: %s) to global from defaults" % (k, kwargs[k]))
+                self.logger.debug("adding %s (value: %s) to global from defaults" % (k, self._args[k]))
                 self.config.set('global', k, v)
 
         if not self.config.has_section(self.default):
@@ -87,10 +87,10 @@ class Config(object):
 
         for k, v in self.sectionopts.items():
             if k in self._args:
-                self.logger.debug("adding %s (value: %s) to %s from arguments" % (k, kwargs[k]), self.default)
-                self.config.set(self.default, k, kwargs[k])
+                self.logger.debug("adding %s (value: %s) to %s from arguments" % (k, self._args[k]), self.default)
+                self.config.set(self.default, k, self._args[k])
             else:
-                self.logger.debug("adding %s (value: %s) to %s from section opts" % (k, kwargs[k]), self.default)
+                self.logger.debug("adding %s (value: %s) to %s from section opts" % (k, self._args[k]), self.default)
                 self.config.set(self.default, k, v)
 
     def dump(self):
