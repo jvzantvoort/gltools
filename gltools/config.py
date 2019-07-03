@@ -78,7 +78,7 @@ class Config(object):
                 self.logger.debug("adding %s (value: %s) to global from arguments" % (k, self._args[k]))
                 self.config.set('global', k, self._args[k])
             else:
-                self.logger.debug("adding %s (value: %s) to global from defaults" % (k, self._args[k]))
+                self.logger.debug("adding %s (value: %s) to global from defaults" % (k, v))
                 self.config.set('global', k, v)
 
         if not self.config.has_section(self.default):
@@ -90,7 +90,7 @@ class Config(object):
                 self.logger.debug("adding %s (value: %s) to %s from arguments" % (k, self._args[k]), self.default)
                 self.config.set(self.default, k, self._args[k])
             else:
-                self.logger.debug("adding %s (value: %s) to %s from section opts" % (k, self._args[k]), self.default)
+                self.logger.debug("adding %s (value: %s) to %s from section opts" % (k, v, self.default))
                 self.config.set(self.default, k, v)
 
     def dump(self):
