@@ -120,7 +120,7 @@ class Main(object):
 
         command.append(scriptfile)
 
-        self.logger.info("  execute %s" % scriptfile)
+        self.logger.debug("  execute %s" % scriptfile)
 
         process = subprocess.Popen(command,
                                    stderr=subprocess.STDOUT,
@@ -142,10 +142,10 @@ class Main(object):
         returncode = process.returncode
 
         if returncode != 0:
-            self.logger.info("  execute %s, failed" % scriptfile)
+            self.logger.error("  execute %s, failed" % scriptfile)
             raise IOError(retv[0])
 
-        self.logger.info("  execute %s, success" % scriptfile)
+        self.logger.debug("  execute %s, success" % scriptfile)
         return retv
 
 
@@ -289,10 +289,26 @@ class ExportGroup(object):
             return False
         return True
 
+    def ignore_extended(self, row):
+        path = row.get('path')
+
+        if self.extended:
+            self.logger.debug("is extended")
+            return False
+
+        if path.startswith('role-'):
+            self.logger.debug("exclude path: %s" % path)
+            return True
+        self.logger.debug("include path: %s" % path)
+        return False
+
     def getprojects(self):
         retv = list()
 
         for row in self._lgitlab.grouptree(self.groupname):
+            if self.ignore_extended(row):
+                continue
+
             row['type'] = "portable"
             if self.bundles:
                 row['type'] = "bundle"
@@ -345,15 +361,12 @@ class ExportGroup(object):
         self.logger.info("export %(name)s, end" % row)
 
     def main(self):
-        print(self.outputdir)
-        print(self.groupname)
         tempdir = os.path.join(self.outputdir, "tmp")
         try:
             os.makedirs(tempdir)
 
         except OSError as err:
-            print(err)
-            pass
+            self.logger.error(err)
 
         tempdir = tempfile.mkdtemp(suffix='_export',
                                    prefix=self.groupname + "_",

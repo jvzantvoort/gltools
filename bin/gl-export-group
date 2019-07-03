@@ -69,7 +69,7 @@ logger.setLevel(logging.DEBUG)
 
 consolehandler = logging.StreamHandler(sys.stdout)
 consolehandler.setFormatter(logging.Formatter("%(levelname)s %(funcName)s:  %(message)s"))
-consolehandler.setLevel(logging.DEBUG)
+consolehandler.setLevel(logging.INFO)
 logger.addHandler(consolehandler)
 
 logfilehandler = logging.FileHandler(LOGFILE)
