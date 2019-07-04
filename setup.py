@@ -18,15 +18,19 @@ setup(
     version=__version__,
     description='GitLab Tools',
     keywords='gitlab,gltools',
+    install_requires=['click>=6.7,<7.0', 'python-gitlab'],
     long_description=long_description,
     author='John van Zantvoort',
     author_email='john.van.zantvoort@proxy.nl',
     url='https://github.com/jvzantvoort/gltools',
     packages=find_packages(exclude=['docs', 'docs-src', 'tests']),
-    install_requires=['python-gitlab'],
     scripts=['bin/gl-export-group', 'bin/gl-setup-group'],
     license='MIT',
     test_suite="tests",
+    entry_points='''
+      [console_scripts]
+      glt=gltools.cli:cli
+    ''',
     classifiers=[
           'Development Status :: 5 - Production/Stable',
           'Intended Audience :: Developers',
