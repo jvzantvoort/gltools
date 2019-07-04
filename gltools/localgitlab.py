@@ -1,5 +1,4 @@
 
-import sys
 import logging
 
 from .exceptions import GLToolsException
@@ -14,7 +13,7 @@ except ImportError:
 class LocalGitLab(object):
     """Wrapper for the ``gitlab`` library
 
-    :param server: 
+    :param server:
     :param groupname: description
 
     :type server: str
@@ -60,11 +59,6 @@ class LocalGitLab(object):
             retv.append(group.name)
         return sorted(retv)
 
-    @staticmethod
-    def _proxy_url(url):
-        # Gotta love incositent fqdn's
-        return url.replace('gitlab.mst.proxy.nl', 'gitlab.proxy.nl')
-
     def getproj(self, project):
         """Translate the provided object in a more useable dictionary.
 
@@ -93,7 +87,7 @@ class LocalGitLab(object):
         +---------------------+------------------------------------------+
 
         :param project: project object
-        :type project: 
+        :type project:
         :rtype: dict
 
         """
@@ -107,7 +101,7 @@ class LocalGitLab(object):
         retv['group_path'] = namespace.get('full_path')
 
         retv['name'] = attributes.get('name')
-        retv['http_url_to_repo'] = self._proxy_url(attributes.get('http_url_to_repo'))
+        retv['http_url_to_repo'] = attributes.get('http_url_to_repo')
         retv['id'] = attributes.get('id')
         retv['path'] = attributes.get('path')
         retv['path_with_namespace'] = attributes.get('path_with_namespace')
@@ -131,6 +125,11 @@ class LocalGitLab(object):
                     return group
 
     def grouptree(self, groupname):
+        """
+
+        :param groupname: name of the group
+        :type groupname: str
+        """
         retv = list()
         obj = self.getgroup(groupname)
         if obj is None:
