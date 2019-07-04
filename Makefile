@@ -14,7 +14,7 @@ test:
 	echo $${testdir}
 
 docs:
-	@make -C docs html
+	@make -C sphinxdoc html
 
 
 tag:
