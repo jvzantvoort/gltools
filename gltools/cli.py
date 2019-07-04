@@ -90,7 +90,7 @@ def cli():
               default=os.path.expanduser('~/exports'))
 @common_options
 def export(sw_gitlab, sw_bundles, sw_list, sw_http, sw_extended, sw_groupname, outputdir):
-    """Run the builtin development server"""
+    """Export the latest version of the projects"""
 
     args = dict(GITLAB=sw_gitlab,
                 OUTPUTDIR=outputdir,
@@ -122,6 +122,7 @@ def export(sw_gitlab, sw_bundles, sw_list, sw_http, sw_extended, sw_groupname, o
               default=os.path.expanduser('~/Workspace'))
 @common_options
 def setup_wd(sw_gitlab, sw_bundles, sw_list, sw_http, sw_extended, sw_groupname, workdir):
+    """Setup or update local clones of the group"""
 
     args = dict(GITLAB=sw_gitlab,
                 WORKDIR=workdir,
@@ -148,7 +149,8 @@ def setup_wd(sw_gitlab, sw_bundles, sw_list, sw_http, sw_extended, sw_groupname,
 @click.option('--destination', '-d', 'destination',
               help=HELP_OPT_DEST)
 @common_options
-def setup_wd(sw_gitlab, sw_bundles, sw_list, sw_http, sw_extended, sw_groupname, destination):
+def sync(sw_gitlab, sw_bundles, sw_list, sw_http, sw_extended, sw_groupname, destination):
+    """Sync one GitLab group to another."""
 
     args = dict(GITLAB=sw_gitlab,
                 DESTINATION=destination,
