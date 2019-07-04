@@ -25,18 +25,18 @@ Make sure you save it - you won't be able to access it again.
 Get the sources:
 
 ```
-git clone https://github.com/jvzantvoort/gltools.git
+# git clone https://github.com/jvzantvoort/gltools.git
 ```
 
 Build the package:
 ```
-cd gltools
-python setup.py bdist_rpm
+# cd gltools
+# python setup.py bdist_rpm
 ```
 
 Install the package
 ```
-sudo yum install dist/gltools-0.X.X-1.noarch.rpm
+# sudo yum install dist/gltools-0.X.X-1.noarch.rpm
 ```
 
 ## Configuration
@@ -45,14 +45,14 @@ When the tool is first run and no configuration is available a dummy
 configuration is created in `~/.python-gitlab.cfg`.
 
 ```
-# glt setup --groupname homenet
+# glt setup --groupname kitchen
 ```
 
 **FIXME**: horrible error message
 
 The content of the file should look something like this
 ```
-cat ~/.python-gitlab.cfg
+# cat ~/.python-gitlab.cfg
 
 [global]
 default = local
@@ -68,10 +68,62 @@ private_token = FIXME
 Update the parameters with the token your obtained and the url of
 the gitlab server.
 
+## Checkout the group
+
 ```
-[ansible@workstation ~]$ glt setup --groupname homenet
-[ansible@workstation ~]$ cd ~/Workspace/homenet/
+# glt setup --groupname kitchen
+# cd ~/Workspace/kitchen/
 ```
 
-Do the work including committing.
+Do the work including committing and pushing.
+
+## Export the repositories for later use
+
+```
+# glt export --groupname kitchen
+INFO export_project:  export recipes, start
+INFO export_project:  export recipes, end
+```
+
+Verify
+
+```
+# cd ~/exports/kitchen/
+# ls -1
+recipes
+```
+
+**NOTE**: unless the `--extended` option is provided certain patterns like
+`role-*` are ommited.
+
+
+```
+# glt export --groupname kitchen
+INFO export_project:  export cookiedough, start
+INFO export_project:  export cookiedough, end
+INFO export_project:  export recipes, start
+INFO export_project:  export recipes, end
+```
+
+
+## Export the repositories to bundles
+
+This is allows for backups, duplication or moving of projects.
+
+```
+# glt export -o ~/backups --groupname kitchen --extended --bundles
+INFO export_project:  export role-cookiedough, start
+INFO export_project:  export role-cookiedough, end
+INFO export_project:  export recipes, start
+INFO export_project:  export recipes, end
+```
+
+Verify:
+
+```
+# cd  ~/backups/kitchen/
+# ls -1 *.bundle
+recipes.bundle
+role-cookiedough.bundle
+```
 
