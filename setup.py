@@ -24,7 +24,6 @@ setup(
     author_email='john.van.zantvoort@proxy.nl',
     url='https://github.com/jvzantvoort/gltools',
     packages=find_packages(exclude=['docs', 'docs-src', 'tests']),
-    scripts=['bin/gl-export-group', 'bin/gl-setup-group'],
     license='MIT',
     test_suite="tests",
     entry_points='''

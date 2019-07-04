@@ -11,7 +11,6 @@ Contents:
 
    gltools/*
    *
-   bin/*
 
 
 Indices and tables
