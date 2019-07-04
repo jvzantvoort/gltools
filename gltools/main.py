@@ -3,12 +3,8 @@ import os
 import tempfile
 import logging
 import base64
-import re
-# import shutil
-import subprocess
 from .localgitlab import LocalGitLab
 from .config import Config
-# from .exceptions import GLToolsException
 from .git import Git
 
 
@@ -231,9 +227,8 @@ class WorkOnGroup(Main):
         try:
             os.makedirs(self.grouppath)
 
-        except OSError as err:
+        except OSError:
             pass
-
 
     def getprojects(self):
 
@@ -280,7 +275,6 @@ class WorkOnGroup(Main):
 
 
 class ExportGroup(Main):
-
 
     def __init__(self, **kwargs):
         props = ("GITLAB", "OUTPUTDIR", "SWLIST", "BUNDLES", "EXTENDED",
@@ -389,6 +383,7 @@ ImZhaWxlZCB0byBoYW5kbGUgJFRZUEUiOyBleGl0IDggOzsKZXNhYwoKcG9wZApwb3BkCg==
 
         for row in self.getprojects():
             self.export_project(row, self.outputdir, tempdir)
+
 
 class SyncGroup(Main):
 

@@ -5,6 +5,7 @@ import logging
 
 from .exceptions import GLToolsException
 
+
 class Git(object):
 
     def __init__(self, **kwargs):

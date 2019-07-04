@@ -22,8 +22,9 @@ CONSOLE.setFormatter(logging.Formatter("%(levelname)s %(funcName)s:  %(message)s
 CONSOLE.setLevel(logging.INFO)
 LOG.addHandler(CONSOLE)
 
+
 class State(object):
-    ''' Maintain logging level.'''
+    """Maintain logging level."""
 
     def __init__(self, log_name='gltools', level=logging.INFO):
         self.logger = logging.getLogger(log_name)
@@ -39,35 +40,42 @@ class State(object):
 # pylint: disable=C0103
 pass_state = click.make_pass_decorator(State, ensure=True)
 
+
 def gitlab_option(flag_obj):
     """which configuration section should be used"""
     return click.option('--gitlab', '-g', 'sw_gitlab',
                         help=gitlab_option.__doc__)(flag_obj)
+
 
 def bundles_option(flag_obj):
     """Export to bundles"""
     return click.option('-b', '--bundles', 'sw_bundles',
                         is_flag=True, default=False, help=bundles_option.__doc__)(flag_obj)
 
+
 def list_option(flag_obj):
     """List groups"""
     return click.option('-l', '--list', 'sw_list',
                         is_flag=True, default=False, help=list_option.__doc__)(flag_obj)
+
 
 def http_option(flag_obj):
     """Use http urls i.s.o. ssh in project listing"""
     return click.option('--http', 'sw_http',
                         is_flag=True, default=False, help=http_option.__doc__)(flag_obj)
 
+
 def extended_option(flag_obj):
     """Extended project listing (include roles)"""
     return click.option('--extended', '-e', 'sw_extended',
                         default=False, is_flag=True, help=extended_option.__doc__)(flag_obj)
 
+
 def groupname_option(flag_obj):
     """Set groupname"""
     return click.option('--groupname', '-g', 'sw_groupname',
                         help=groupname_option.__doc__)(flag_obj)
+
 
 def common_options(flag_obj):
     """Collection of common options"""
@@ -79,6 +87,7 @@ def common_options(flag_obj):
     flag_obj = groupname_option(flag_obj)
     return flag_obj
 
+
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
 @click.version_option(__version__, '-V', '--version')
 def cli():
@@ -86,6 +95,7 @@ def cli():
     GitLab tools
     """
     pass
+
 
 @cli.command(name="export")
 @click.option('--outputdir', '-o', 'outputdir',
@@ -149,6 +159,7 @@ def setup_wd(sw_gitlab, sw_bundles, sw_list, sw_http, sw_extended, sw_groupname,
         glt_obj.main()
     except GLToolsException as exp:
         raise SystemExit("\n" + str(exp))
+
 
 @cli.command(name="sync")
 @click.option('--destination', '-d', 'destination',

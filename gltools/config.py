@@ -14,6 +14,7 @@ except ImportError:
 
 from .exceptions import GLToolsException
 
+
 class Config(object):
     """brief explanation
 

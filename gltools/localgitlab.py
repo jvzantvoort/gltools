@@ -59,7 +59,8 @@ class LocalGitLab(object):
             retv.append(group.name)
         return sorted(retv)
 
-    def getproj(self, project):
+    @staticmethod
+    def getproj(project):
         """Translate the provided object in a more useable dictionary.
 
         Return value descriptions:
@@ -133,7 +134,7 @@ class LocalGitLab(object):
         retv = list()
         obj = self.getgroup(groupname)
         if obj is None:
-            raise GLToolsException("Could not find group %s"  % groupname)
+            raise GLToolsException("Could not find group %s" % groupname)
 
         for project in obj.projects.list(all=True):
             retv.append(self.getproj(project))
