@@ -102,12 +102,11 @@ class Git(object):
         retv = list()
         command = list()
         command.append(self.which('git'))
+        # pylint: disable=W0106
         [command.append(x) for x in args]
+        # pylint: enable=W0106
 
-        cmd_args = {
-                    'stderr': subprocess.STDOUT,
-                    'stdout': subprocess.PIPE
-                   }
+        cmd_args = {'stderr': subprocess.STDOUT, 'stdout': subprocess.PIPE}
         for kname, kvalue in kwargs.items():
             cmd_args[kname] = kvalue
 

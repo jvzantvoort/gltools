@@ -3,11 +3,12 @@ import os
 import tempfile
 import logging
 import base64
-import shutil
+import re
+# import shutil
 import subprocess
 from .localgitlab import LocalGitLab
 from .config import Config
-from .exceptions import GLToolsException
+# from .exceptions import GLToolsException
 from .git import Git
 
 
@@ -80,6 +81,11 @@ class Main(object):
         return True
 
     def check_gitlab_group(self):
+        """Checks whether the configured groupname exists on the server.
+
+        :returns: True if groupname is available in the server, False if not
+        :rtype: bool
+        """
 
         if self._lgitlab is None:
             self._lgitlab = LocalGitLab(server=self.gitlab)
@@ -97,6 +103,16 @@ class Main(object):
         return True
 
     def ignore_extended(self, row):
+        """A filter funtion. If ``self.extended`` is **True** no checks are
+        executed and ``False`` is returned.
+
+        If the fields provided in ``row`` match the provided patterns 
+
+        :param row: dictionary with variables from 
+        :type row: dict
+        :returns: True if row is ignore-able and False if not.
+        :rtype: int, float
+        """
         path = row.get('path')
 
         if self.extended:
@@ -268,7 +284,7 @@ class ExportGroup(Main):
 
     def __init__(self, **kwargs):
         props = ("GITLAB", "OUTPUTDIR", "SWLIST", "BUNDLES", "EXTENDED",
-                "HTTP", "GROUPNAME")
+                 "HTTP", "GROUPNAME")
 
         self._config = None
         self._lgitlab = None
