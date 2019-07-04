@@ -51,8 +51,8 @@ class Config(object):
 
         self.config = configparser.RawConfigParser()
 
-        for k, v in kwargs.items():
-            self._args[k] = v
+        for varname, varval in kwargs.items():
+            self._args[varname] = varval
         self.loadconfig()
 
     @property
@@ -73,25 +73,33 @@ class Config(object):
             self.logger.debug("adding required section 'global'")
             self.config.add_section('global')
 
-        for k, v in self.globalopts.items():
-            if k in self._args:
-                self.logger.debug("adding %s (value: %s) to global from arguments" % (k, self._args[k]))
-                self.config.set('global', k, self._args[k])
+        for varname, varval in self.globalopts.items():
+            if varname in self._args:
+                self.logger.debug(
+                    "adding %s (value: %s) to global from arguments" %
+                    (varname, self._args[varname]))
+                self.config.set('global', varname, self._args[varname])
             else:
-                self.logger.debug("adding %s (value: %s) to global from defaults" % (k, v))
-                self.config.set('global', k, v)
+                self.logger.debug(
+                    "adding %s (value: %s) to global from defaults" %
+                    (varname, varval))
+                self.config.set('global', varname, varval)
 
         if not self.config.has_section(self.default):
             self.logger.debug("adding section '%s'" % self.default)
             self.config.add_section(self.default)
 
-        for k, v in self.sectionopts.items():
-            if k in self._args:
-                self.logger.debug("adding %s (value: %s) to %s from arguments" % (k, self._args[k]), self.default)
-                self.config.set(self.default, k, self._args[k])
+        for varname, varval in self.sectionopts.items():
+            if varname in self._args:
+                self.logger.debug(
+                    "adding %s (value: %s) to %s from arguments" %
+                    (varname, self._args[varname], self.default))
+                self.config.set(self.default, varname, self._args[varname])
             else:
-                self.logger.debug("adding %s (value: %s) to %s from section opts" % (k, v, self.default))
-                self.config.set(self.default, k, v)
+                self.logger.debug(
+                    "adding %s (value: %s) to %s from section opts" %
+                    (varname, varval, self.default))
+                self.config.set(self.default, varname, varval)
 
     def dump(self):
         """Write the ini file content."""
@@ -157,7 +165,8 @@ class Config(object):
 
         private_token = self.config.get(self.default, 'private_token')
         if private_token == 'FIXME':
-            raise GLToolsException("provided configfile %s is not valid, perhaps new?\n" % cfgfile)
+            raise GLToolsException(
+                "provided configfile %s is not valid, perhaps new?\n" % cfgfile)
 
     @property
     def configs(self):

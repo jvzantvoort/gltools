@@ -1,2 +1,2 @@
-# see: http://legacy.python.org/dev/peps/pep-0440/#public-version-identifiers
-__version__ = '0.2.0'
+"""Maintain the version of the package"""
+__version__ = '0.2.1'
