@@ -9,8 +9,12 @@ Contents:
    :maxdepth: 3
    :glob:
 
-   gltools/*
-   *
+   gltools/config
+   gltools/exceptions
+   gltools/git
+   gltools/localgitlab
+   gltools/main
+   gltools/cli
 
 
 Indices and tables
