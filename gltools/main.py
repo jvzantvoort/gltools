@@ -1,10 +1,12 @@
 
 import os
+import re
 import tempfile
 import logging
 import subprocess
 from .localgitlab import LocalGitLab
-from .config import PyGitLabConfig
+from .config import PyGitLabConfig, GitLabToolsConfig
+from .exceptions import GLToolsException
 from .git import Git
 
 import pkgutil
@@ -33,6 +35,7 @@ class Main(object):
 
         self._config = None
         self._lgitlab = None
+        self._gltcfg = None
 
         self.gitlab = None
         self.groupname = None
@@ -115,9 +118,21 @@ class Main(object):
             self.logger.debug("is extended")
             return False
 
-        if path.startswith('role-'):
-            self.logger.debug("exclude path: %s" % path)
-            return True
+        if not self._gltcfg or self._gltcfg is None:
+            raise GLToolsException("GitLabToolsConfig not loaded")
+
+        if not self._gltcfg.mask:
+            self.logger.debug("no patterns available")
+            return False
+
+        if not self.maskpatterns:
+            for pattern in self._gltcfg.mask:
+                self.maskpatterns.append(re.compile(pattern))
+
+        for pattern in self.maskpatterns:
+            if pattern.match(path):
+                self.logger.debug("exclude path: %s" % path)
+                return True
 
         self.logger.debug("include path: %s" % path)
         return False
@@ -215,6 +230,13 @@ class WorkOnGroup(Main):
             if prop in kwargs:
                 propname = prop.lower()
                 setattr(self, propname, kwargs[prop])
+
+        self._gltcfg = GitLabToolsConfig(servername=self.gitlab, groupname=self.groupname)
+        self.maskpatterns = list()
+
+        if self.workdir is None:
+            self.workdir = self._gltcfg.projectdir
+        self.tempdir = self._gltcfg.tempdir
 
         self.logger = kwargs.get('logger', logging.getLogger('gltools'))
         self._git = Git(logger=self.logger)
