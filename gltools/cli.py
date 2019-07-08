@@ -116,9 +116,6 @@ def export(sw_gitlab, sw_bundles, sw_list, sw_http, sw_extended, sw_groupname, o
 
     glt_obj = ExportGroup(**args)
 
-    if not glt_obj.check_gitlab_section():
-        sys.exit(1)
-
     if not glt_obj.check_gitlab_group():
         sys.exit(2)
 
@@ -147,8 +144,6 @@ def setup_wd(sw_gitlab, sw_bundles, sw_list, sw_http, sw_extended, sw_groupname,
                 logger=LOG)
 
     glt_obj = WorkOnGroup(**args)
-    if not glt_obj.check_gitlab_section():
-        sys.exit(1)
 
     if not glt_obj.check_gitlab_group():
         sys.exit(2)
@@ -177,9 +172,6 @@ def sync(sw_gitlab, sw_bundles, sw_list, sw_http, sw_extended, sw_groupname, des
                 logger=LOG)
 
     glt_obj = SyncGroup(**args)
-
-    if not glt_obj.check_gitlab_section():
-        sys.exit(1)
 
     if not glt_obj.check_gitlab_group():
         sys.exit(2)
