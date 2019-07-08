@@ -4,10 +4,10 @@ import re
 import tempfile
 import logging
 import subprocess
-from .localgitlab import LocalGitLab
-from .config import PyGitLabConfig, GitLabToolsConfig
+from .config import GitLabToolsConfig
 from .exceptions import GLToolsException
 from .git import Git
+from .localgitlab import LocalGitLab
 
 import pkgutil
 
@@ -33,7 +33,6 @@ class Main(object):
     def __init__(self, **kwargs):
         props = ("GITLAB", "GROUPNAME")
 
-        self._config = None
         self._lgitlab = None
         self._gltcfg = None
 
@@ -51,33 +50,6 @@ class Main(object):
         self.logger = kwargs.get('logger', logging.getLogger('gltools'))
 
         self._scripttemplate = None
-
-    def check_gitlab_section(self):
-        """Check if the provided ``gitlab`` parameter is valid.
-
-        :returns: True is valid, False if not
-        :rtype: boolean
-
-        Example::
-
-          if not obj.check_gitlab_section():
-              sys.exit("Invalid config section")
-
-        """
-
-        if self._config is None:
-            self._config = PyGitLabConfig()
-
-        if self.gitlab is None:
-            self.gitlab = self._config.default
-
-        if self.gitlab not in self._config.configs:
-            self.logger.error("Invalid config section called. Valid options are:")
-            for csect in self._config.configs:
-                self.logger.error(" - %s" % csect)
-            self.logger.error("     Check %s for more information" % self._config.configfile)
-            return False
-        return True
 
     def check_gitlab_group(self):
         """Checks whether the configured groupname exists on the server.
@@ -210,7 +182,6 @@ class WorkOnGroup(Main):
     def __init__(self, **kwargs):
         props = ("GITLAB", "GROUPNAME", "WORKDIR", "HTTP", "EXTENDED")
 
-        self._config = None
         self._lgitlab = None
         self._git = None
 
@@ -302,7 +273,6 @@ class ExportGroup(Main):
         props = ("GITLAB", "OUTPUTDIR", "SWLIST", "BUNDLES", "EXTENDED",
                  "HTTP", "GROUPNAME")
 
-        self._config = None
         self._lgitlab = None
 
         self.swlist = False
