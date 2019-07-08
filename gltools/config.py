@@ -15,7 +15,7 @@ except ImportError:
 from .exceptions import GLToolsException
 
 
-class Config(object):
+class PyGitLabConfig(object):
     """brief explanation
 
     extended explanation
@@ -29,9 +29,9 @@ class Config(object):
 
     Example::
 
-      from gltools.config import Config
+      from gltools.config import PyGitLabConfig
 
-      config = Config()
+      config = PyGitLabConfig()
 
     """
     def __init__(self, **kwargs):

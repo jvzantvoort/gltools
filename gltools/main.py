@@ -4,7 +4,7 @@ import tempfile
 import logging
 import base64
 from .localgitlab import LocalGitLab
-from .config import Config
+from .config import PyGitLabConfig
 from .git import Git
 
 
@@ -63,7 +63,7 @@ class Main(object):
         """
 
         if self._config is None:
-            self._config = Config()
+            self._config = PyGitLabConfig()
 
         if self.gitlab is None:
             self.gitlab = self._config.default
