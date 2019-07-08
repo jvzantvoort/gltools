@@ -2,11 +2,12 @@
 import os
 import tempfile
 import logging
-import base64
+import subprocess
 from .localgitlab import LocalGitLab
 from .config import PyGitLabConfig
 from .git import Git
 
+import pkgutil
 
 class Main(object):
     """brief explanation
@@ -46,7 +47,6 @@ class Main(object):
 
         self.logger = kwargs.get('logger', logging.getLogger('gltools'))
 
-        self._scriptbase64 = kwargs.get('scriptbase64', "")
         self._scripttemplate = None
 
     def check_gitlab_section(self):
@@ -164,7 +164,7 @@ class Main(object):
         self.logger.debug("  execute %s" % scriptfile)
 
         process = subprocess.Popen(command,
-                                   stderr=subprocess.STDOUT,
+                                   stderr=subprocess.PIPE,
                                    stdout=subprocess.PIPE)
 
         stdoutdata, stderrdata = process.communicate()
@@ -184,7 +184,7 @@ class Main(object):
 
         if returncode != 0:
             self.logger.error("  execute %s, failed" % scriptfile)
-            raise IOError(retv[0])
+            raise GLToolsException(retv[0])
 
         self.logger.debug("  execute %s, success" % scriptfile)
         return retv
@@ -199,6 +199,7 @@ class WorkOnGroup(Main):
         self._lgitlab = None
         self._git = None
 
+
         self.gitlab = None
         self.groupname = None
         self.workdir = None
@@ -209,6 +210,7 @@ class WorkOnGroup(Main):
         self.repository = "origin"
         self.refspec = "master"
 
+
         for prop in props:
             if prop in kwargs:
                 propname = prop.lower()
@@ -216,8 +218,6 @@ class WorkOnGroup(Main):
 
         self.logger = kwargs.get('logger', logging.getLogger('gltools'))
         self._git = Git(logger=self.logger)
-        # self._scriptbase64 = kwargs.get('scriptbase64', "")
-        # self._scripttemplate = None
 
     @property
     def grouppath(self):
@@ -290,41 +290,7 @@ class ExportGroup(Main):
         self.gitlab = None
         self.outputdir = None
         self.groupname = None
-        self._scriptbase64 = """
-IyEvYmluL2Jhc2gKZGVjbGFyZSAtciBTQ1JJUFRQQVRIPSIkKHJlYWRsaW5rIC1mICQwKSIKZGVj
-bGFyZSAtciBTQ1JJUFROQU1FPSIkKGJhc2VuYW1lICRTQ1JJUFRQQVRIIC5zaCkiCmRlY2xhcmUg
-LXIgU0NSSVBURElSPSIkKGRpcm5hbWUgJFNDUklQVFBBVEgpIgpkZWNsYXJlIC1yIEdST1VQX05B
-TUU9IiUoZ3JvdXBfbmFtZSlzIgpkZWNsYXJlIC1yIEdST1VQX1BBVEg9IiUoZ3JvdXBfcGF0aClz
-IgpkZWNsYXJlIC1yIFRZUEU9IiUodHlwZSlzIgpkZWNsYXJlIC1yIE5BTUU9IiUobmFtZSlzIgpk
-ZWNsYXJlIC1yIFhQQVRIPSIlKHBhdGgpcyIKZGVjbGFyZSAtciBQQVRIX1dJVEhfTkFNRVNQQUNF
-PSIlKHBhdGhfd2l0aF9uYW1lc3BhY2UpcyIKZGVjbGFyZSAtciBVUkw9IiUodXJsKXMiCmRlY2xh
-cmUgLXIgT1VUUFVURElSPSIlKG91dHB1dGRpcilzLyUoZ3JvdXBfcGF0aClzIgpkZWNsYXJlIC1y
-IFRFTVBESVI9IiUodGVtcGRpcilzLyUoZ3JvdXBfcGF0aClzIgpkZWNsYXJlIC1yIE9VVFBVVEZJ
-TEU9IiUob3V0cHV0ZGlyKXMvJShncm91cF9wYXRoKXMvJShwYXRoKXMiCgpSRVBPRElSPSQoYmFz
-ZW5hbWUgIiR7VVJMfSIgLmdpdCkKCmZ1bmN0aW9uIG1rYnVuZGxlKCkKewogIGxvY2FsIG91dHB1
-dGZpbGU9JDE7IHNoaWZ0CiAgZ2l0IGJ1bmRsZSBjcmVhdGUgJHtvdXRwdXRmaWxlfSBtYXN0ZXIK
-ICBSRVRWPSQ/CiAgW1sgIiR7UkVUVn0iID0gIjAiIF1dICYmIHJldHVybiAwCiAgZWNobyAiZXhp
-dCBjb2RlOiAke1JFVFZ9IgogIGV4aXQgNwp9CgpmdW5jdGlvbiBhcmNoaXZlKCkKewogIGxvY2Fs
-IHBhdGg9JDE7IHNoaWZ0CiAgbG9jYWwgdGVtcGRpcj0iJHtURU1QRElSfS9hcmNoaXZlIgogIG1r
-ZGlyIC1wICIke3RlbXBkaXJ9IgoKICBnaXQgYXJjaGl2ZSAtLXByZWZpeD0ke3BhdGh9LyBIRUFE
-IHwgdGFyIC14ZiAtIC1DICIke3RlbXBkaXJ9IgoKICBpbnN0YWxsX3JvbGVzICIke3RlbXBkaXJ9
-LyR7cGF0aH0iCgogIGlmIHJzeW5jIC1hIC0tZGVsZXRlICIke3RlbXBkaXJ9LyR7cGF0aH0vIiAi
-JHtPVVRQVVRGSUxFfS8iCiAgdGhlbgogICAgcmV0dXJuIDAKICBlbHNlCiAgICBleGl0IDEwCiAg
-ZmkKCn0KCmZ1bmN0aW9uIGluc3RhbGxfcm9sZXMoKQp7CiAgbG9jYWwgYXJjaGRpcj0kMTsgc2hp
-ZnQKICBbWyAtZSAiJHthcmNoZGlyfS9yb2xlcy9yZXF1aXJlbWVudHMueW1sIiBdXSB8fCByZXR1
-cm4gMAogIGFuc2libGUtZ2FsYXh5IGluc3RhbGwgLXIgIiR7YXJjaGRpcn0vcm9sZXMvcmVxdWly
-ZW1lbnRzLnltbCIgLXAgIiR7YXJjaGRpcn0vcm9sZXMiCn0KCgpta2RpciAtcCAiJHtPVVRQVVRE
-SVJ9IiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfHwgZXhpdCAxCm1rZGly
-IC1wICIke1RFTVBESVJ9IiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB8
-fCBleGl0IDIKCnB1c2hkICIke1RFTVBESVJ9IiAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICB8fCBleGl0IDMKCmVjaG8gIkNsb25pbmcgJHtOQU1FfSIgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICB8fCBleGl0IDQKZ2l0IGNsb25lICIke1VSTH0i
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHx8IGV4aXQgNQoKcHVz
-aGQgIiR7UkVQT0RJUn0iICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IHx8IGV4aXQgNgoKY2FzZSAkVFlQRSBpbiAKICBidW5kbGUpIG1rYnVuZGxlICIke09VVFBVVEZJ
-TEV9LmJ1bmRsZSI7OwogIHBvcnRhYmxlKSBhcmNoaXZlICIke1hQQVRIfSI7OwogICopIGVjaG8g
-ImZhaWxlZCB0byBoYW5kbGUgJFRZUEUiOyBleGl0IDggOzsKZXNhYwoKcG9wZApwb3BkCg==
-"""
+        self._scripttemplate = pkgutil.get_data(__package__, 'export.sh')
 
         for prop in props:
             if prop in kwargs:
@@ -332,13 +298,10 @@ ImZhaWxlZCB0byBoYW5kbGUgJFRZUEUiOyBleGl0IDggOzsKZXNhYwoKcG9wZApwb3BkCg==
                 setattr(self, propname, kwargs[prop])
 
         self.logger = kwargs.get('logger', logging.getLogger('gltools'))
-        self._scripttemplate = None
 
     def export_project(self, row, outputdir, tempdir):
         row['outputdir'] = outputdir
         row['tempdir'] = tempdir
-        if not self._scripttemplate:
-            self._scripttemplate = base64.b64decode(self._scriptbase64)
 
         self.logger.info("export %(name)s, start" % row)
         scriptname = "%(group_path)s_%(name)s.sh" % row
@@ -397,6 +360,7 @@ class SyncGroup(Main):
                 setattr(self, propname, kwargs[prop])
 
         self.logger = kwargs.get('logger', logging.getLogger('gltools'))
+        self._scripttemplate = pkgutil.get_data(__package__, 'sync.sh')
 
     def main(self):
         tempdir = os.path.join(self.outputdir, "tmp")
