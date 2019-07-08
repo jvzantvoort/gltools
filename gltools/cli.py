@@ -19,7 +19,7 @@ LOG.setLevel(logging.DEBUG)
 
 CONSOLE = logging.StreamHandler(sys.stdout)
 CONSOLE.setFormatter(logging.Formatter("%(levelname)s %(funcName)s:  %(message)s"))
-CONSOLE.setLevel(logging.INFO)
+CONSOLE.setLevel(logging.DEBUG)
 LOG.addHandler(CONSOLE)
 
 
@@ -99,8 +99,7 @@ def cli():
 
 @cli.command(name="export")
 @click.option('--outputdir', '-o', 'outputdir',
-              help=HELP_OPT_OUTPUTDIR,
-              default=os.path.expanduser('~/exports'))
+              help=HELP_OPT_OUTPUTDIR)
 @common_options
 # pylint: disable=R0913
 def export(sw_gitlab, sw_bundles, sw_list, sw_http, sw_extended, sw_groupname, outputdir):
@@ -132,8 +131,7 @@ def export(sw_gitlab, sw_bundles, sw_list, sw_http, sw_extended, sw_groupname, o
 
 @cli.command(name="setup")
 @click.option('--workdir', '-w', 'workdir',
-              help=HELP_OPT_WORKDIR,
-              default=os.path.expanduser('~/Workspace'))
+              help=HELP_OPT_WORKDIR)
 @common_options
 # pylint: disable=R0913
 def setup_wd(sw_gitlab, sw_bundles, sw_list, sw_http, sw_extended, sw_groupname, workdir):
