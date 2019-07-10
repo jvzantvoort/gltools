@@ -5,6 +5,7 @@ import logging
 
 from .exceptions import GLToolsException
 
+log = logging.getLogger('gltools.git')
 
 class Git(object):
 
@@ -12,7 +13,6 @@ class Git(object):
         self._topdir = None
         self._path = None
         self._remote_origin_url = None
-        self.logger = kwargs.get('logger', logging.getLogger('gltools'))
 
     @property
     def topdir(self):
@@ -116,7 +116,7 @@ class Git(object):
         if len(stdoutdata.strip()) > 0:
             for line in stdoutdata.split('\n'):
                 line = line.strip('\n')
-                self.logger.debug(line)
+                log.debug(line)
                 retv.append(line)
         returncode = process.returncode
 
