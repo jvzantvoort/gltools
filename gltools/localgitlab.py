@@ -8,6 +8,8 @@ import pprint
 
 from gltools.exceptions import GLToolsException, GLToolsConfigException
 
+log = logging.getLogger('gltools.localgitlab')
+
 try:
     import gitlab
 
@@ -60,7 +62,6 @@ class GitLabInitConfig(object):
 
         self.configfile = kwargs.get('configfile', CONFIGFILE)
 
-        self.logger = kwargs.get('logger', logging.getLogger('gltools'))
 
         self.config = configparser.RawConfigParser()
 
@@ -105,33 +106,33 @@ class GitLabInitConfig(object):
         """initialize an empty conifguration"""
 
         if not self.config.has_section('global'):
-            self.logger.debug("adding required section 'global'")
+            log.debug("adding required section 'global'")
             self.config.add_section('global')
 
         for varname, varval in self.globalopts.items():
             if varname in self._args:
-                self.logger.debug(
+                log.debug(
                     "adding %s (value: %s) to global from arguments" %
                     (varname, self._args[varname]))
                 self.config.set('global', varname, self._args[varname])
             else:
-                self.logger.debug(
+                log.debug(
                     "adding %s (value: %s) to global from defaults" %
                     (varname, varval))
                 self.config.set('global', varname, varval)
 
         if not self.config.has_section(self.default):
-            self.logger.debug("adding section '%s'" % self.default)
+            log.debug("adding section '%s'" % self.default)
             self.config.add_section(self.default)
 
         for varname, varval in self.sectionopts.items():
             if varname in self._args:
-                self.logger.debug(
+                log.debug(
                     "adding %s (value: %s) to %s from arguments" %
                     (varname, self._args[varname], self.default))
                 self.config.set(self.default, varname, self._args[varname])
             else:
-                self.logger.debug(
+                log.debug(
                     "adding %s (value: %s) to %s from section opts" %
                     (varname, varval, self.default))
                 self.config.set(self.default, varname, varval)
@@ -173,8 +174,7 @@ class GitLabConfig(object):
                             'private_token': 'FIXME',
                             'api_version': 4}
 
-        self.configfile = kwargs.get('configfile', CONFIGFILE)
-        self.logger = kwargs.get('logger', logging.getLogger('gltools'))
+        self.configfile = CONFIGFILE
 
         self.config = configparser.RawConfigParser()
 
@@ -254,12 +254,13 @@ class QueryGitLab(object):
             if prop in kwargs:
                 setattr(self, pname, kwargs[prop])
 
-        self.logger = kwargs.get('logger', logging.getLogger('gltools'))
 
     def connect(self, configname):
         """(re)connect to server and refresh the groups list"""
+        log.debug('connect to %s, start' % configname)
         self._gitlab = gitlab.Gitlab.from_config(self.configname)
         self._groups = [grp for grp in self.gitlab.groups.list(all=True)]
+        log.debug('connect to %s, end' % configname)
 
     # used
     @property
@@ -330,8 +331,7 @@ class QueryGitLab(object):
         if self._groups:
             return self._groups
 
-        for grp in self.gitlab.groups.list(all=True):
-            self._groups.append(grp)
+        self._groups = self.gitlab.groups.list(all=True)
 
         return self._groups
 
@@ -339,12 +339,11 @@ class QueryGitLab(object):
     def groupnames(self):
         """return the gitlab group names visible to the user"""
         retv = list()
-        for group in self.groups:
-            for groupsect in self.groups:
-                if groupsect.name != groupsect.path:
-                    retv.append("%s (%s)" % (groupsect.name, groupsect.path))
-                else:
-                    retv.append("%s" % groupsect.name)
+        for groupsect in self.groups:
+            if groupsect.name != groupsect.path:
+                retv.append("%s (%s)" % (groupsect.name, groupsect.path))
+            else:
+                retv.append("%s" % groupsect.name)
         return sorted(retv)
 
     @staticmethod
@@ -421,6 +420,7 @@ class QueryGitLab(object):
         :type groupname: str
         """
         retv = list()
+        log.debug('lookup projects for %s' % groupname)
         obj = self.getgroup(groupname)
         if obj is None:
             raise GLToolsException("Could not find group %s" % groupname)
@@ -444,7 +444,6 @@ class MirrorGitLab(object):
 
     def __init__(self, *args, **kwargs):
 
-        self.logger = kwargs.get('logger', logging.getLogger('gltools'))
         self.config = GitLabConfig()
         self.defaultserver = self.config.default
         self.gitlab = dict()
@@ -511,58 +510,3 @@ class MirrorGitLab(object):
             projects.append(project)
 
         pprint.pprint(projects)
-
-
-#     def create_project(self, project_name, groupname=None):
-#         if groupname is None:
-#             groupname = self.groupname
-#         group_obj = self._get_group_obj(groupname)
-# 
-#         cfgdata = {'name': project_name, 'namespace_id': group_obj.id}
-# 
-#         try:
-#             project = self.gitlab.projects.create(cfgdata)
-# 
-#         except gitlab.exceptions.GitlabCreateError as err:
-#             pprint.pprint(err)
-# 
-#     def copy_project(self, srcgroup, dstgroup, srcprojname, dstprojname=None):
-#         if dstprojname is None:
-#             dstprojname = srcprojname
-#         srcgrpobj = self._get_group_obj(srcgroup)
-#         dstgrpobj = self._get_group_obj(dstgroup)
-#         srcproj = srcgrpobj.projects.list(search=srcprojname)
-#         srcconfig = self.getprojectmeta(srcproj[0])
-#         dstconfig = dict()
-#         dstconfig['name'] = dstprojname
-#         dstconfig['description'] = srcconfig.get('description')
-#         dstconfig['namespace_id'] = dstgrpobj.id
-#         try:
-#             project = self.gitlab.projects.create(dstconfig)
-# 
-#         except gitlab.exceptions.GitlabCreateError as err:
-#             pass
-# 
-#     def copy_all_projects(self, srcgroup, dstgroup):
-# 
-#         srcgrpobj = self._get_group_obj(srcgroup)
-#         dstgrpobj = self._get_group_obj(dstgroup)
-#         srcprojs = srcgrpobj.projects.list(all=True)
-#         for srcproj in srcprojs:
-#             srcconfig = self.getprojectmeta(srcproj)
-#             dstconfig = dict()
-#             dstconfig['path'] = srcconfig['path']
-#             dstconfig['name'] = srcconfig['name']
-#             dstconfig['description'] = srcconfig.get('description')
-#             dstconfig['namespace_id'] = dstgrpobj.id
-#             try:
-#                 project = self.gitlab.projects.create(dstconfig)
-# 
-#             except gitlab.exceptions.GitlabCreateError as err:
-#                 print("failed to create %(name)s" % dstconfig)
-# 
-
-
-if __name__ == '__main__':
-    GL = MirrorGitLab()
-    GL.mirror_groups('homenet', 'ansible-common')
