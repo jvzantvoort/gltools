@@ -28,49 +28,42 @@ import os
 import tempfile
 import logging
 import pkgutil
-
 from gltools.main.common import Main
 
+log = logging.getLogger('gltools.exportgroup')
 
 class ExportGroup(Main):
 
     def __init__(self, **kwargs):
-        props = ("GITLAB", "OUTPUTDIR", "SWLIST", "BUNDLES", "EXTENDED",
-                 "HTTP", "GROUPNAME")
+        self.tempdir = None
 
-        self._lgitlab = None
+        super(ExportGroup, self).__init__(**kwargs)
 
-        self.swlist = False
-        self.bundles = False
-        self.extended = False
-        self.http = False
-        self.gitlab = None
-        self.outputdir = None
-        self.groupname = None
+        if self.outputdir is None:
+            self.outputdir = self.gltcfg.exportdir
+
+        if self.tempdir is None:
+            self.tempdir = self.gltcfg.tempdir
+
         self._scripttemplate = pkgutil.get_data(__package__, 'export.sh')
 
-        for prop in props:
-            if prop in kwargs:
-                propname = prop.lower()
-                setattr(self, propname, kwargs[prop])
-
-        self.logger = kwargs.get('logger', logging.getLogger('gltools'))
 
     def export_project(self, row, outputdir, tempdir):
         row['outputdir'] = outputdir
         row['tempdir'] = tempdir
 
-        self.logger.info("export %(name)s, start" % row)
+        log.info("%(name)s" % row)
+        log.debug("export %(name)s, start" % row)
         scriptname = "%(group_path)s_%(name)s.sh" % row
         scriptname = scriptname.lower().replace(' ', '_')
         outfile = os.path.join(tempdir, scriptname)
-        self.logger.debug("  wrote scriptfile: %s" % outfile)
+        log.debug("  wrote scriptfile: %s" % outfile)
         with open(outfile, "w") as ofh:
             ofh.write(self._scripttemplate % row)
         os.chmod(outfile, 493)
         self.exec_script(outfile)
         os.unlink(outfile)
-        self.logger.info("export %(name)s, end" % row)
+        log.debug("export %(name)s, end" % row)
 
     def getprojects(self):
 
@@ -90,16 +83,16 @@ class ExportGroup(Main):
         return retv
 
     def main(self):
-        tempdir = os.path.join(self.outputdir, "tmp")
+        log.info("outputdir: %s" % self.outputdir)
         try:
-            os.makedirs(tempdir)
+            os.makedirs(self.tempdir)
 
         except OSError as err:
-            self.logger.error(err)
+            pass
 
         tempdir = tempfile.mkdtemp(suffix='_export',
-                                   prefix=self.groupname + "_",
-                                   dir=tempdir)
+                                   prefix=self.srcgroupname + "_",
+                                   dir=self.tempdir)
 
         for row in self.getprojects():
             self.export_project(row, self.outputdir, tempdir)
