@@ -139,7 +139,7 @@ class GitLabInitConfig(object):
 
     def __call__(self):
         self.initconfig()
-        with open(cfgfile, 'w') as cfgh:
+        with open(self.configfile, 'w') as cfgh:
             self.config.write(cfgh)
 
 class GitLabConfig(object):
