@@ -29,7 +29,10 @@ import re
 import logging
 import subprocess
 from gltools.exceptions import GLToolsException
+from gltools.config import GitLabToolsConfig
 from gltools.localgitlab import QueryGitLab
+
+log = logging.getLogger('gltools.common')
 
 
 __author__ = "John van Zantvoort"
@@ -44,43 +47,72 @@ class Main(object):
 
     extended explanation
 
-    :param GITLAB: gitlab configuration section
+    :param gitlab_config_section: gitlab configuration section
     :param GROUPNAME: gitlab groupname
 
-    :type GITLAB: string
+    :type gitlab_config_section: string
     :type GROUPNAME: string
     :return: return description
     :rtype: the return type description
 
     Example::
 
-      obj = Main(GITLAB="local", GROUPNAME="golang")
+      obj = Main(gitlab_config_section="local", GROUPNAME="golang")
 
     """
 
     def __init__(self, **kwargs):
-        props = ("GITLAB", "GROUPNAME")
 
-        self._lgitlab = None
+        # command line options
+        self.gitlab_config_section = kwargs.get('gitlab_config_section')
+        self.srcgroupname = kwargs.get('srcgroupname')
+
+        self.terse = kwargs.get('terse', False)
+
+        self.http = kwargs.get('http', False)
+        self.extended = kwargs.get('extended', False)
+
+        self.bundles = kwargs.get('bundles', False)
+        self.outputdir = kwargs.get('outputdir', "/")
+
+        self.workdir = kwargs.get('workdir')
+        self.dstgroupname = kwargs.get('dstgroupname')
+
+        # container variables
+        self._gitlab = None
         self._gltcfg = None
-
-        self.gitlab = None
-        self.groupname = None
-
-        self.extended = False
-        self.bundles = False
-
-        self.maskpatterns = list()
-        self.http = False
-
-        for prop in props:
-            if prop in kwargs:
-                propname = prop.lower()
-                setattr(self, propname, kwargs[prop])
-
-        self.logger = kwargs.get('logger', logging.getLogger('gltools'))
-
         self._scripttemplate = None
+
+        self._maskpatterns = list()
+
+        if self.gitlab_config_section is None:
+            raise GLToolsException("gitlab config section not defined")
+        log.debug('gitlab_config_section %s' % self.gitlab_config_section)
+
+    @property
+    def gltcfg(self):
+        if not self._gltcfg or self._gltcfg is None:
+            log.debug("start")
+            self._gltcfg = GitLabToolsConfig(servername=self.gitlab_config_section,
+                                             groupname=self.srcgroupname)
+        return self._gltcfg
+
+    @property
+    def gitlab(self):
+        if self._gitlab is None:
+            log.debug('connect to %s' % self.gitlab_config_section)
+            self._gitlab = QueryGitLab(configname=self.gitlab_config_section)
+            log.debug('connect to %s, done' % self.gitlab_config_section)
+        return self._gitlab
+
+    @property
+    def maskpatterns(self):
+        if self._maskpatterns:
+            return self._maskpatterns
+
+        for pattern in self.gltcfg.mask:
+            self._maskpatterns.append(re.compile(pattern))
+        return self._maskpatterns
 
     def check_gitlab_group(self, groupname):
         """Checks whether the configured groupname exists on the server.
@@ -88,10 +120,7 @@ class Main(object):
         :returns: True if groupname is available in the server, False if not
         :rtype: bool
         """
-
-        if self._lgitlab is None:
-            self._lgitlab = QueryGitLab(server=self.gitlab)
-        return self._lgitlab.check_gitlab_group(groupname)
+        return self.gitlab.check_gitlab_group(groupname)
 
     def ignore_extended(self, row):
         """A filter funtion. If ``self.extended`` is **True** no checks are
@@ -107,26 +136,19 @@ class Main(object):
         path = row.get('path')
 
         if self.extended:
-            self.logger.debug("is extended")
+            log.debug("is extended")
             return False
 
-        if not self._gltcfg or self._gltcfg is None:
-            raise GLToolsException("GitLabToolsConfig not loaded")
-
-        if not self._gltcfg.mask:
-            self.logger.debug("no patterns available")
+        if not self.gltcfg.mask:
+            log.debug("no patterns available")
             return False
-
-        if not self.maskpatterns:
-            for pattern in self._gltcfg.mask:
-                self.maskpatterns.append(re.compile(pattern))
 
         for pattern in self.maskpatterns:
             if pattern.match(path):
-                self.logger.debug("exclude path: %s" % path)
+                log.debug("exclude path: %s" % path)
                 return True
 
-        self.logger.debug("include path: %s" % path)
+        log.debug("include path: %s" % path)
         return False
 
     def getprojects(self):
@@ -138,11 +160,10 @@ class Main(object):
         """
 
         retv = list()
+        log.debug('start')
 
-        if self._lgitlab is None:
-            self._lgitlab = QueryGitLab(server=self.gitlab)
-
-        for row in self._lgitlab.projects(self.groupname):
+        for row in self.gitlab.projects(self.srcgroupname):
+            log.debug('project: %(name)s' % row)
             if self.ignore_extended(row):
                 continue
 
@@ -156,6 +177,7 @@ class Main(object):
 
             retv.append(row)
 
+        log.debug('end')
         return retv
 
     def exec_script(self, scriptfile):
@@ -174,7 +196,7 @@ class Main(object):
 
         command.append(scriptfile)
 
-        self.logger.debug("  execute %s" % scriptfile)
+        log.debug("  execute %s" % scriptfile)
 
         process = subprocess.Popen(command,
                                    stderr=subprocess.PIPE,
@@ -185,19 +207,19 @@ class Main(object):
         if stdoutdata is not None and len(stdoutdata.strip()) > 0:
             for line in stdoutdata.split('\n'):
                 line = line.strip('\n')
-                self.logger.debug(">>  %s" % line)
+                log.debug(">>  %s" % line)
                 retv.append(line)
 
         if stderrdata is not None and len(stderrdata.strip()) > 0:
             for line in stderrdata.split('\n'):
                 line = line.strip('\n')
-                self.logger.error("!!  %s" % line)
+                log.error("!!  %s" % line)
 
         returncode = process.returncode
 
         if returncode != 0:
-            self.logger.error("  execute %s, failed" % scriptfile)
+            log.error("  execute %s, failed" % scriptfile)
             raise GLToolsException(retv[0])
 
-        self.logger.debug("  execute %s, success" % scriptfile)
+        log.debug("  execute %s, success" % scriptfile)
         return retv

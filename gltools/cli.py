@@ -6,22 +6,10 @@ import sys
 import os.path
 import logging
 import click
-from gltools.exceptions import GLToolsException
-from gltools.main import ExportGroup, WorkOnGroup, SyncGroup
+from gltools.exceptions import GLToolsException, GLToolsConfigException
+from gltools.main import ExportGroup, WorkOnGroup, SyncGroup, ListProjects, ListGroups, InitConfig
 from gltools.version import __version__
-
-HELP_OPT_OUTPUTDIR = "There the export shut be put"
-HELP_OPT_WORKDIR = "Where the group should be maintained"
-HELP_OPT_DEST = "Source group"
-
-LOG = logging.getLogger('gltools')
-LOG.setLevel(logging.DEBUG)
-
-CONSOLE = logging.StreamHandler(sys.stdout)
-CONSOLE.setFormatter(logging.Formatter("%(levelname)s %(funcName)s:  %(message)s"))
-CONSOLE.setLevel(logging.DEBUG)
-LOG.addHandler(CONSOLE)
-
+from gltools.localgitlab import GitLabConfig
 
 class State(object):
     """Maintain logging level."""
@@ -36,57 +24,104 @@ class State(object):
 
         self.logger.setLevel(level)
 
-
 # pylint: disable=C0103
 pass_state = click.make_pass_decorator(State, ensure=True)
 
+def verbose_option(f):
+    def callback(ctx, param, value):
+        state = ctx.ensure_object(State)
+        if value:
+            state.logger.setLevel(logging.DEBUG)
+    return click.option('-v', '--verbose',
+                        is_flag=True,
+                        expose_value=False,
+                        help='Enable verbose output',
+                        callback=callback)(f)
 
-def gitlab_option(flag_obj):
-    """which configuration section should be used"""
-    return click.option('--gitlab', '-g', 'sw_gitlab',
-                        help=gitlab_option.__doc__)(flag_obj)
+def quiet_option(f):
+    def callback(ctx, param, value):
+        state = ctx.ensure_object(State)
+        if value:
+            state.logger.setLevel(logging.ERROR)
+    return click.option('-q', '--quiet',
+                        is_flag=True,
+                        expose_value=False,
+                        help='Silence warnings',
+                        callback=callback)(f)
+
+def verbosity_options(f):
+    f = verbose_option(f)
+    f = quiet_option(f)
+    return f
+
+# attempt to get a default from the config
+DEFAULT_GITLAB_SECTION = 'local'
+GITLAB_CONFIGS = list()
+
+try:
+    glc = GitLabConfig()
+    DEFAULT_GITLAB_SECTION = glc.default
+    GITLAB_CONFIGS = glc.configs
+except GLToolsConfigException:
+    pass
 
 
-def bundles_option(flag_obj):
-    """Export to bundles"""
-    return click.option('-b', '--bundles', 'sw_bundles',
-                        is_flag=True, default=False, help=bundles_option.__doc__)(flag_obj)
+gitlab_opt = click.option('--gitlab', '-g', 'gitlab_config_section',
+                          help="which configuration section should be used" +
+                          " (default: %s)" % DEFAULT_GITLAB_SECTION,
+                          metavar="GITLABSECTION",
+                          default=DEFAULT_GITLAB_SECTION)
 
+# base options for all
+base_options = [
+    gitlab_opt,
+    click.argument('srcgroupname', nargs=1, required=True, type=str, metavar='GITLABGROUPNAME')
+]
 
-def list_option(flag_obj):
-    """List groups"""
-    return click.option('-l', '--list', 'sw_list',
-                        is_flag=True, default=False, help=list_option.__doc__)(flag_obj)
+# options that effect output
+output_options = [
+    click.option('--http', 'http', is_flag=True, default=False, help="Use http urls i.s.o. ssh in project sourcing"),
+    click.option('--extended', '-e', 'extended', default=False, is_flag=True, help="Extended project listing (include roles)")
+]
 
+# export specific options
+export_options = base_options + output_options + [
+    click.option('-b', '--bundles', 'bundles', is_flag=True, default=False, help="Export to bundles"),
+    click.option('--outputdir', '-o', 'outputdir', help="There the export shut be put")
+]
 
-def http_option(flag_obj):
-    """Use http urls i.s.o. ssh in project listing"""
-    return click.option('--http', 'sw_http',
-                        is_flag=True, default=False, help=http_option.__doc__)(flag_obj)
+# setup specific options
+setup_options = base_options + output_options + [
+    click.option('--workdir', '-w', 'workdir', help="Where the group should be maintained")
+]
 
+# sync options
+sync_options = base_options + [
+    click.argument('dstgroupname', nargs=1, required=True, type=str, metavar='DESTGROUPNAME')
+]
 
-def extended_option(flag_obj):
-    """Extended project listing (include roles)"""
-    return click.option('--extended', '-e', 'sw_extended',
-                        default=False, is_flag=True, help=extended_option.__doc__)(flag_obj)
+# groups options
+groups_options = [gitlab_opt]
 
+# projects options
+projects_options = base_options + output_options + [
+    click.option('--terse', '-t', 'terse', is_flag=True, default=False, help="Terse output in command"),
+]
 
-def groupname_option(flag_obj):
-    """Set groupname"""
-    return click.option('--groupname', '-g', 'sw_groupname',
-                        help=groupname_option.__doc__)(flag_obj)
-
-
-def common_options(flag_obj):
-    """Collection of common options"""
-    flag_obj = gitlab_option(flag_obj)
-    flag_obj = bundles_option(flag_obj)
-    flag_obj = list_option(flag_obj)
-    flag_obj = http_option(flag_obj)
-    flag_obj = extended_option(flag_obj)
-    flag_obj = groupname_option(flag_obj)
-    return flag_obj
-
+def add_options(options):
+    """ Given a list of click options this creates a decorator that
+    will return a function used to add the options to a click command.
+    :param options: a list of click.options decorator.
+    """
+    def _add_options(func):
+        """ Given a click command and a list of click options this will
+        return the click command decorated with all the options in the list.
+        :param func: a click command function.
+        """
+        for option in reversed(options):
+            func = option(func)
+        return func
+    return _add_options
 
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
 @click.version_option(__version__, '-V', '--version')
@@ -98,28 +133,12 @@ def cli():
 
 
 @cli.command(name="export")
-@click.option('--outputdir', '-o', 'outputdir',
-              help=HELP_OPT_OUTPUTDIR)
-@common_options
-# pylint: disable=R0913
-def export(sw_gitlab, sw_bundles, sw_list, sw_http, sw_extended, sw_groupname, outputdir):
+@add_options(export_options)
+@verbosity_options
+def export(**kwargs):
     """Export the latest version of the projects"""
-
-    args = dict(GITLAB=sw_gitlab,
-                OUTPUTDIR=outputdir,
-                SWLIST=sw_list,
-                BUNDLES=sw_bundles,
-                EXTENDED=sw_extended,
-                HTTP=sw_http,
-                GROUPNAME=sw_groupname,
-                logger=LOG)
-
-    glt_obj = ExportGroup(**args)
-
-    if not glt_obj.check_gitlab_group(sw_groupname):
-        sys.exit(2)
-
     try:
+        glt_obj = ExportGroup(**kwargs)
         glt_obj.main()
 
     except GLToolsException as exp:
@@ -127,56 +146,64 @@ def export(sw_gitlab, sw_bundles, sw_list, sw_http, sw_extended, sw_groupname, o
 
 
 @cli.command(name="setup")
-@click.option('--workdir', '-w', 'workdir',
-              help=HELP_OPT_WORKDIR)
-@common_options
-# pylint: disable=R0913
-def setup_wd(sw_gitlab, sw_bundles, sw_list, sw_http, sw_extended, sw_groupname, workdir):
+@add_options(setup_options)
+@verbosity_options
+def setup_wd(**kwargs):
     """Setup or update local clones of the group"""
-
-    args = dict(GITLAB=sw_gitlab,
-                WORKDIR=workdir,
-                SWLIST=sw_list,
-                BUNDLES=sw_bundles,
-                EXTENDED=sw_extended,
-                HTTP=sw_http,
-                GROUPNAME=sw_groupname,
-                logger=LOG)
-
-    glt_obj = WorkOnGroup(**args)
-
-    if not glt_obj.check_gitlab_group(sw_groupname):
-        sys.exit(2)
-
     try:
+        glt_obj = WorkOnGroup(**kwargs)
         glt_obj.main()
+
     except GLToolsException as exp:
         raise SystemExit("\n" + str(exp))
 
 
 @cli.command(name="sync")
-@click.option('--destination', '-d', 'destination',
-              help=HELP_OPT_DEST)
-@common_options
-# pylint: disable=R0913
-def sync(sw_gitlab, sw_bundles, sw_list, sw_http, sw_extended, sw_groupname, destination):
+@add_options(sync_options)
+@verbosity_options
+def sync(**kwargs):
     """Sync one GitLab group to another."""
-
-    args = dict(GITLAB=sw_gitlab,
-                DESTINATION=destination,
-                SWLIST=sw_list,
-                BUNDLES=sw_bundles,
-                EXTENDED=sw_extended,
-                HTTP=sw_http,
-                GROUPNAME=sw_groupname,
-                logger=LOG)
-
-    glt_obj = SyncGroup(**args)
-
-    if not glt_obj.check_gitlab_group(sw_groupname):
-        sys.exit(2)
-
     try:
+        glt_obj = SyncGroup(**kwargs)
         glt_obj.main()
+
     except GLToolsException as exp:
         raise SystemExit("\n" + str(exp))
+
+@cli.command(name="groups")
+@add_options(groups_options)
+@verbosity_options
+def groups(**kwargs):
+    """list groups on the server"""
+    try:
+        glt_obj = ListGroups(**kwargs)
+        glt_obj.main()
+
+    except GLToolsException as exp:
+        raise SystemExit("\n" + str(exp))
+
+@cli.command(name="projects")
+@add_options(projects_options)
+@verbosity_options
+def projects(**kwargs):
+    """list projects in the selected group"""
+    try:
+        glt_obj = ListProjects(**kwargs)
+        glt_obj.main()
+
+    except GLToolsException as exp:
+        raise SystemExit("\n" + str(exp))
+
+@cli.command(name="init")
+@add_options([gitlab_opt])
+@verbosity_options
+def init_gitlab_config(**kwargs):
+    """initialize the local gitlab config"""
+
+    try:
+        glt_obj = InitConfig(**kwargs)
+        glt_obj.main()
+
+    except GLToolsException as exp:
+        raise SystemExit("\n" + str(exp))
+
