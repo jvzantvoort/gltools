@@ -10,6 +10,9 @@ import pkgutil
 import tempfile
 
 from gltools.main.common import Main
+from gltools.localgitlab import MirrorGitLab
+from gltools.config import GitLabToolsConfig
+from gltools.exceptions import GLToolsException
 
 log = logging.getLogger('gltools.syncgroup')
 
@@ -21,29 +24,65 @@ __version__ = "1.0.1"
 
 
 class SyncGroup(Main):
+    """this class syncs data from one group to another.
+
+    extended explanation
+
+    :param arg1: description
+    :param arg2: description
+    :type arg1: type description
+    :type arg1: type description
+
+    .. note:: we only use origin/main and ssh for the moment. Life is hard
+              enough already.
+    """
 
     def __init__(self, **kwargs):
-        self.tempdir = None
-
         super(SyncGroup, self).__init__(**kwargs)
 
-        self.repository = "origin"
+        self.srcconfig = GitLabToolsConfig(servername=self.gitlab_config_section,
+                                           groupname=self.srcgroupname)
+
+        self.dstconfig = GitLabToolsConfig(servername=self.dst_gitlab_config_section,
+                                           groupname=self.dstgroupname)
+
+        self.repository = "source"
         self.refspec = "master"
 
         self._scripttemplate = pkgutil.get_data(__package__, 'sync.sh')
-        self.outputdir = None # shutup pylint
+
+    def sync_project(self, row, tempdir):
+        row['tempdir'] = tempdir
+        row['branch'] = self.refspec
+        row['source'] = self.repository
+        log.info("%(name)s" % row)
+        log.debug("sync %(name)s, start" % row)
+        scriptname = "%(path)s.sh" % row
+        outfile = os.path.join(tempdir, scriptname)
+        log.debug("  wrote scriptfile: %s" % outfile)
+        with open(outfile, "w") as ofh:
+            ofh.write(self._scripttemplate % row)
+
+        os.chmod(outfile, 493)
+        self.exec_script(outfile)
+        os.unlink(outfile)
+        log.debug("export %(name)s, end" % row)
 
     def main(self):
-        tempdir = os.path.join(self.outputdir, "tmp")
-        try:
-            os.makedirs(tempdir)
+        tempdir = self.mktemp('_sync')
 
-        except OSError as err:
-            log.error(err)
+        if not self.srcconfig.protected:
+            log.warn("%s should be protected in gltools config" % self.srcgroupname)
 
-        tempdir = tempfile.mkdtemp(suffix='_sync',
-                                   prefix=self.groupname + "_",
-                                   dir=tempdir)
+        if self.dstconfig.protected:
+            raise GLToolsException("cowardly refusing to sync to a protected group")
 
-        for row in self.getprojects():
-            print(row)
+        mirror = MirrorGitLab()
+        mirror.source = self.gitlab_config_section
+        mirror.destination = self.dst_gitlab_config_section
+        mirrordata = mirror.mirror_groups(self.srcgroupname, self.dstgroupname)
+        for row in mirrordata:
+            self.sync_project(row, tempdir)
+
+        # for row in self.getprojects():
+        #     print(row)

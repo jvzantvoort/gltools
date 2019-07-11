@@ -72,6 +72,7 @@ gitlab_opt = click.option('--gitlab', '-g', 'gitlab_config_section',
                           metavar="GITLABSECTION",
                           default=DEFAULT_GITLAB_SECTION)
 
+
 # base options for all
 base_options = [
     gitlab_opt,
@@ -97,7 +98,13 @@ setup_options = base_options + output_options + [
 
 # sync options
 sync_options = base_options + [
-    click.argument('dstgroupname', nargs=1, required=True, type=str, metavar='DESTGROUPNAME')
+    click.argument('dstgroupname', nargs=1, required=True, type=str, metavar='DESTGROUPNAME'),
+    click.option('--dest-gitlab', '-G', 'dst_gitlab_config_section',
+                              help="which configuration section should be used" +
+                              " as destination for sync" +
+                              " (default: %s)" % DEFAULT_GITLAB_SECTION,
+                              metavar="DESTGITLABSECTION",
+                              default=DEFAULT_GITLAB_SECTION)
 ]
 
 # groups options

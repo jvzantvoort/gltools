@@ -26,6 +26,8 @@ SOFTWARE.
 
 from __future__ import print_function
 import re
+import os
+import tempfile
 import logging
 import subprocess
 from gltools.exceptions import GLToolsException
@@ -65,6 +67,7 @@ class Main(object):
 
         # command line options
         self.gitlab_config_section = kwargs.get('gitlab_config_section')
+        self.dst_gitlab_config_section = kwargs.get('dst_gitlab_config_section')
         self.srcgroupname = kwargs.get('srcgroupname')
 
         self.terse = kwargs.get('terse', False)
@@ -78,6 +81,7 @@ class Main(object):
         self.workdir = kwargs.get('workdir')
         self.dstgroupname = kwargs.get('dstgroupname')
 
+        self.tempdir = None
         # container variables
         self._gitlab = None
         self._gltcfg = None
@@ -179,6 +183,24 @@ class Main(object):
 
         log.debug('end')
         return retv
+
+    def mktemp(self, suffix='_gltools'):
+
+        if self.tempdir is None:
+            self.tempdir = self.gltcfg.tempdir
+
+        try:
+            os.makedirs(self.tempdir)
+
+        except OSError as err:
+            if os.path.isdir(self.tempdir):
+                log.debug("%s already exists" % self.tempdir)
+            else:
+                log.error(err)
+
+        return tempfile.mkdtemp(suffix=suffix,
+                                prefix=self.srcgroupname + "_",
+                                dir=self.tempdir)
 
     def exec_script(self, scriptfile):
         """Execute a scriptfile

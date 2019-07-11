@@ -2,6 +2,7 @@
 
 
 from __future__ import print_function
+import re
 import os
 import logging
 import pprint
@@ -479,6 +480,8 @@ class MirrorGitLab(object):
         if servername not in self.config.configs:
             raise GLToolsConfigException("config %s not found" % servername)
 
+        log.debug("connect to %s" % servername)
+
         self.gitlab[servername] = gitlab.Gitlab.from_config(servername)
         return self.gitlab[servername]
 
@@ -495,18 +498,65 @@ class MirrorGitLab(object):
         raise GLToolsException("search for %s in %s yields multiple results" %
                                (groupname, servername))
 
+    def sync_project(self, row, tempdir):
+        pass
+
     def mirror_groups(self, src_group, dst_group):
         srcgrpobj = self.get_group_obj(self.source, src_group)
         dstgrpobj = self.get_group_obj(self.destination, dst_group)
+        dstconn = gitlab.Gitlab.from_config(self.destination)
         srcprojs = srcgrpobj.projects.list(all=True)
         projects = list()
+        srcurls = dict()
+        retv = list()
 
         for srcproj in srcprojs:
             project = dict()
-            project['name'] = srcproj.attributes.get('name')
-            project['path'] = srcproj.attributes.get('path')
+            path = srcproj.attributes.get('path')
+            name = srcproj.attributes.get('name')
+            url = srcproj.attributes.get('ssh_url_to_repo')
+            project['name'] = name
+            project['path'] = path
             project['description'] = srcproj.attributes.get('description')
             project['namespace_id'] = dstgrpobj.id
             projects.append(project)
+            srcurls[path] = url
 
-        pprint.pprint(projects)
+        log.info("create remote projects, start")
+
+        for projectdef in projects:
+            try:
+                project = dstconn.projects.create(projectdef)
+
+            except gitlab.exceptions.GitlabCreateError as err:
+                try:
+                    message = " ".join(err.error_message['name'])
+
+                except IndexError:
+                    message = err
+
+                except KeyError:
+                    message = err
+
+                projectdef['error'] = message
+                log.warn("failed to create %(name)s: %(error)s" % projectdef)
+
+        log.info("create remote projects, end")
+
+        log.info("reload remote project configuration, start")
+        dstgrpobj = self.get_group_obj(self.destination, dst_group)
+
+        for dstproj in dstgrpobj.projects.list(all=True):
+            tmpdict = dict()
+            for keyn in ['description', 'group_id', 'http_url_to_repo', 'id',
+                         'name', 'name_with_namespace', 'path',
+                         'path_with_namespace', 'ssh_url_to_repo']:
+                tmpdict[keyn] = dstproj.attributes.get(keyn)
+
+            path = tmpdict.get('path')
+            tmpdict['src_ssh_url_to_repo'] = srcurls.get(path)
+
+            retv.append(tmpdict)
+        log.info("reload remote project configuration, end")
+
+        return retv
