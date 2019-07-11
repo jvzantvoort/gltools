@@ -27,7 +27,7 @@ pushd "${REPODIR}" >/dev/null 2>&1                           || exit $((LINENO+1
 echo "add remote dest"
 git remote add dest "${DST_SSH_REPO_URL}"                    || exit $((LINENO+1000))
 echo "push to remote dest"
-git push dest "${BRANCH}"                                    || exit $((LINENO+1000))
+git push dest "${BRANCH}" --tags                             || exit $((LINENO+1000))
 popd >/dev/null 2>&1                                         || exit $((LINENO+1000))
 rm -rf "${REPODIR}"                                          || exit $((LINENO+1000))
 popd >/dev/null 2>&1                                         || exit $((LINENO+1000))

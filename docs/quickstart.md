@@ -45,13 +45,13 @@ When the tool is first run and no configuration is available a dummy
 configuration is created in `~/.python-gitlab.cfg`.
 
 ```
-# glt setup --groupname kitchen
+# glt setup kitchen
 ```
 
 **FIXME**: horrible error message
 
 The content of the file should look something like this
-```
+```ini
 # cat ~/.python-gitlab.cfg
 
 [global]
