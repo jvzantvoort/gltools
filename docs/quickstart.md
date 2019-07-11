@@ -32,6 +32,10 @@ Build the package:
 ```
 # cd gltools
 # python setup.py bdist_rpm
+
+- or - 
+
+# make rpm
 ```
 
 Install the package
@@ -51,6 +55,7 @@ configuration is created in `~/.python-gitlab.cfg`.
 **FIXME**: horrible error message
 
 The content of the file should look something like this
+
 ```ini
 # cat ~/.python-gitlab.cfg
 
@@ -71,7 +76,7 @@ the gitlab server.
 ## Checkout the group
 
 ```
-# glt setup --groupname kitchen
+# glt setup kitchen
 # cd ~/Workspace/kitchen/
 ```
 
@@ -80,7 +85,7 @@ Do the work including committing and pushing.
 ## Export the repositories for later use
 
 ```
-# glt export --groupname kitchen
+# glt export kitchen
 INFO export_project:  export recipes, start
 INFO export_project:  export recipes, end
 ```
@@ -98,7 +103,7 @@ recipes
 
 
 ```
-# glt export --groupname kitchen
+# glt export kitchen
 INFO export_project:  export cookiedough, start
 INFO export_project:  export cookiedough, end
 INFO export_project:  export recipes, start
@@ -111,7 +116,7 @@ INFO export_project:  export recipes, end
 This is allows for backups, duplication or moving of projects.
 
 ```
-# glt export -o ~/backups --groupname kitchen --extended --bundles
+# glt export -o ~/backups kitchen --extended --bundles kitchen
 INFO export_project:  export role-cookiedough, start
 INFO export_project:  export role-cookiedough, end
 INFO export_project:  export recipes, start
