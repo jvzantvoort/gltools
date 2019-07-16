@@ -69,6 +69,7 @@ class Main(object):
         self.gitlab_config_section = kwargs.get('gitlab_config_section')
         self.dst_gitlab_config_section = kwargs.get('dst_gitlab_config_section')
         self.srcgroupname = kwargs.get('srcgroupname')
+        self.homedir = os.path.expanduser('~')
 
         self.terse = kwargs.get('terse', False)
 
@@ -76,6 +77,7 @@ class Main(object):
         self.extended = kwargs.get('extended', False)
 
         self.bundles = kwargs.get('bundles', False)
+        self.dstdirectory = kwargs.get('dstdirectory', self.homedir)
         self.outputdir = kwargs.get('outputdir', "/")
 
         self.workdir = kwargs.get('workdir')

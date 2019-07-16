@@ -84,5 +84,48 @@ class SyncGroup(Main):
         for row in mirrordata:
             self.sync_project(row, tempdir)
 
-        # for row in self.getprojects():
-        #     print(row)
+class SyncGroupLocal(Main):
+
+    def __init__(self, **kwargs):
+        super(SyncGroupLocal, self).__init__(**kwargs)
+
+        self.srcconfig = GitLabToolsConfig(servername=self.gitlab_config_section,
+                                           groupname=self.srcgroupname)
+
+        self.repository = "source"
+        self.refspec = "master"
+        # self.dstdirectory 
+
+        self._scripttemplate = pkgutil.get_data(__package__, 'synclocal.sh')
+
+    def sync_project(self, row, tempdir):
+
+        scriptname = "%(path)s.sh" % row
+        outfile = os.path.join(tempdir, scriptname)
+
+        row['tempdir'] = tempdir
+        row['branch'] = self.refspec
+        row['source'] = self.repository
+
+        log.info("%(name)s" % row)
+        log.debug("sync %(name)s, start" % row)
+        log.debug("  wrote scriptfile: %s" % outfile)
+        with open(outfile, "w") as ofh:
+            ofh.write(self._scripttemplate % row)
+
+        os.chmod(outfile, 493)
+        self.exec_script(outfile)
+        os.unlink(outfile)
+        log.debug("export %(name)s, end" % row)
+
+    def main(self):
+        tempdir = self.mktemp('_synclocal')
+
+        if not self.srcconfig.protected:
+            log.warn("%s should be protected in gltools config" % self.srcgroupname)
+
+        mirror = MirrorGitLab()
+        mirror.source = self.gitlab_config_section
+        mirrordata = mirror.mirror_to_local(self.srcgroupname, self.dstdirectory)
+        for row in mirrordata:
+            self.sync_project(row, tempdir)

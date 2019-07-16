@@ -498,8 +498,22 @@ class MirrorGitLab(object):
         raise GLToolsException("search for %s in %s yields multiple results" %
                                (groupname, servername))
 
-    def sync_project(self, row, tempdir):
-        pass
+    def mirror_to_local(self, src_group, basedir):
+        srcgrpobj = self.get_group_obj(self.source, src_group)
+        retv = list()
+
+        for srcproj in srcgrpobj.projects.list(all=True):
+            tmpproj = {'namespace_id': srcgrpobj.id, 'basedir': basedir}
+
+            for keyn in ['description', 'group_id', 'http_url_to_repo', 'id',
+                         'name', 'name_with_namespace', 'path',
+                         'path_with_namespace', 'ssh_url_to_repo']:
+                tmpproj[keyn] = srcproj.attributes.get(keyn)
+
+            retv.append(tmpproj)
+
+        return retv
+
 
     def mirror_groups(self, src_group, dst_group):
         srcgrpobj = self.get_group_obj(self.source, src_group)

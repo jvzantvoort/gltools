@@ -7,7 +7,7 @@ import os.path
 import logging
 import click
 from gltools.exceptions import GLToolsException, GLToolsConfigException
-from gltools.main import ExportGroup, WorkOnGroup, SyncGroup, ListProjects, ListGroups, InitConfig
+from gltools.main import ExportGroup, WorkOnGroup, SyncGroup, ListProjects, ListGroups, InitConfig, SyncGroupLocal
 from gltools.version import __version__
 from gltools.localgitlab import GitLabConfig
 
@@ -107,6 +107,11 @@ sync_options = base_options + [
                               default=DEFAULT_GITLAB_SECTION)
 ]
 
+# sync local options
+sync_local_options = base_options + [
+    click.argument('dstdirectory', nargs=1, required=True, type=str, default=os.path.expanduser('~'), metavar='DESTDIR')
+]
+
 # groups options
 groups_options = [gitlab_opt]
 
@@ -172,6 +177,18 @@ def sync(**kwargs):
     """Sync one GitLab group to another."""
     try:
         glt_obj = SyncGroup(**kwargs)
+        glt_obj.main()
+
+    except GLToolsException as exp:
+        raise SystemExit("\n" + str(exp))
+
+@cli.command(name="synclocal")
+@add_options(sync_local_options)
+@verbosity_options
+def sync(**kwargs):
+    """Sync one GitLab group to a local archive."""
+    try:
+        glt_obj = SyncGroupLocal(**kwargs)
         glt_obj.main()
 
     except GLToolsException as exp:
