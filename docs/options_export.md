@@ -28,10 +28,36 @@ provided **GITLABGROUPNAME**. The exports come in two versions:
 
   Which configuration section should be used (default: local)
 
-  --http                      Use http urls i.s.o. ssh in project sourcing
-  -e, --extended              Extended project listing (include roles)
-  -b, --bundles               Export to bundles
-  -o, --outputdir TEXT        There the export shut be put
-  -q, --quiet                 Silence warnings
-  -v, --verbose               Enable verbose output
-  -h, --help                  Show this message and exit.
+- `-q, --quiet`
+
+  Silence warnings
+
+- `-v, --verbose`
+
+  Enable verbose output
+
+- `-h, --help`
+
+  Show this message and exit.
+
+- `--http`
+
+  Use http urls instead of ssh in project sourcing.
+
+- `-e, --extended`
+
+  This overrides the ``mask`` filter and provides all visible
+  projects in the listing.
+
+- `-b, --bundles`
+
+  Create output to bundles. These bundles can then later be accessed
+  via the ``git clone`` command.
+
+- `-o, --outputdir <directory>`
+
+  There the export shut be put.
+
+## See Also
+
+* [the gltools config file](gltools_cfg.md)
