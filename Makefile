@@ -1,6 +1,8 @@
 
-.PHONY: test docs tag rpm
+.PHONY: test docs tag rpm changelog
 
+GITHUB_USER ?= jvzantvoort
+GITHUB_PROJECT ?= gltools
 GROUPNAME ?= "homenet"
 
 test:
@@ -24,3 +26,8 @@ tag:
 
 rpm:
 	python setup.py bdist_rpm
+
+changelog:
+	@ docker run -it --rm -v $(PWD):/usr/local/src/your-app \
+	ferrarimarco/github-changelog-generator --user $(GITHUB_USER) \
+	--project $(GITHUB_PROJECT)
