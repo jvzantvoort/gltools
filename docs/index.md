@@ -14,7 +14,7 @@ _Why the whole group?_
 > changes are limited to a single project. Projects can share
 > interfaces, logic, etc. but not language or development speed.
 
-[Quickstart](http://jvzantvoort.github.io/gltools/quickstart.html)
-[Options](options.md)
-
-[Changelog](https://github.com/jvzantvoort/gltools/blob/master/CHANGELOG.md)
+* [Quickstart](quickstart.md)
+* [Options](options.md)
+* [Config files](gltools_cfg.md)
+* [Changelog](https://github.com/jvzantvoort/gltools/blob/master/CHANGELOG.md)

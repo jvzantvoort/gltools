@@ -3,9 +3,9 @@
 ## Synopsis
 
 ```
-  glt export [-g|--gitlab <gitlabsection>] [--http] [-e|--extended]
-    [-b|--bundles] [-o|--outputdir <dirname>] [-q|--quiet]
-    [-v|--verbose] [-h|--help] <gitlabgroupname>
+glt export [-g|--gitlab <gitlabsection>] [-q|--quiet] [-v|--verbose]
+  [--http] [-e|--extended] [-b|--bundles] [-o|--outputdir <dirname>]
+  <gitlabgroupname>
 ```
 
 ## Description
@@ -35,10 +35,6 @@ provided **GITLABGROUPNAME**. The exports come in two versions:
 - `-v, --verbose`
 
   Enable verbose output
-
-- `-h, --help`
-
-  Show this message and exit.
 
 - `--http`
 
