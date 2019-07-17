@@ -16,3 +16,4 @@ _Why the whole group?_
 
 [Quickstart](http://jvzantvoort.github.io/gltools/quickstart.html)
 
+[Changelog](https://github.com/jvzantvoort/gltools/blob/master/CHANGELOG.md)
