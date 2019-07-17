@@ -45,14 +45,8 @@ Install the package
 
 ## Configuration
 
-When the tool is first run and no configuration is available a dummy
-configuration is created in `~/.python-gitlab.cfg`.
-
-```
-# glt setup kitchen
-```
-
-**FIXME**: horrible error message
+To create the initial configuration use [glt init](options_init.md).
+This creates the `~/.python-gitlab.cfg` configuration file.
 
 The content of the file should look something like this
 
@@ -75,14 +69,18 @@ the gitlab server.
 
 ## Checkout the group
 
+Use [glt setup](options_setup.md) to setup a workspace.
+
 ```
-# glt setup kitchen
-# cd ~/Workspace/kitchen/
+glt setup kitchen
+cd ~/Workspace/kitchen/
 ```
 
 Do the work including committing and pushing.
 
 ## Export the repositories for later use
+
+Use [glt export](options_export.md) to export the code.
 
 ```
 # glt export kitchen
@@ -99,17 +97,8 @@ recipes
 ```
 
 **NOTE**: unless the `--extended` option is provided certain patterns like
-`role-*` are ommited.
-
-
-```
-# glt export kitchen
-INFO export_project:  export cookiedough, start
-INFO export_project:  export cookiedough, end
-INFO export_project:  export recipes, start
-INFO export_project:  export recipes, end
-```
-
+mentioned in the `mask` configuration are omitted (see:
+[.gltools.cfg](gltools_cfg.md) for more information.
 
 ## Export the repositories to bundles
 
