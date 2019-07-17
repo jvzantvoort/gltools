@@ -6,7 +6,7 @@ List projects in the selected group.
 
 ```
 glt projects [-g|--gitlab <gitlabsection>] [-q|--quiet] [-v|--verbose]
-  [-h|--help] [--http] [-e|--extended] [-t|--terse] <gitlabgroupname>
+  [--http] [-e|--extended] [-t|--terse] <gitlabgroupname>
 ```
 
 ## Description
@@ -27,10 +27,6 @@ visible to the user.
 - `-v, --verbose`
 
   Enable verbose output
-
-- `-h, --help`
-
-  Show this message and exit.
 
 - `--http`
 

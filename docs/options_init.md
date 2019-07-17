@@ -6,7 +6,6 @@ Initialize the local gitlab config.
 
 ```
 glt groups [-g|--gitlab <gitlabsection>] [-q|--quiet] [-v|--verbose]
-  [-h|--help]
 ```
 
 ## Description
@@ -26,8 +25,4 @@ glt groups [-g|--gitlab <gitlabsection>] [-q|--quiet] [-v|--verbose]
 - `-v, --verbose`
 
   Enable verbose output
-
-- `-h, --help`
-
-  Show this message and exit.
 

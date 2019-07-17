@@ -1,5 +1,7 @@
 # glt export
 
+Export the latest version of the projects
+
 ## Synopsis
 
 ```

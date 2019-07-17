@@ -7,6 +7,7 @@ Setup or update local clones of the group.
 ```
 glt setup [-g|--gitlab <gitlabsection>] [-q|--quiet] [-v|--verbose]
   [--http] [-e|--extended] [-w|--workdir <dirname>]
+  [<gitlabgroupname>]
 ```
 
 ## Description
@@ -39,18 +40,3 @@ glt setup [-g|--gitlab <gitlabsection>] [-q|--quiet] [-v|--verbose]
 - `-w, --workdir <dirname>`
 
   Where the group should be maintained
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
