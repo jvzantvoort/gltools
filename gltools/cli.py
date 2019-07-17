@@ -35,7 +35,7 @@ def verbose_option(f):
     return click.option('-v', '--verbose',
                         is_flag=True,
                         expose_value=False,
-                        help='Enable verbose output',
+                        help='enable verbose output',
                         callback=callback)(f)
 
 def quiet_option(f):
@@ -46,7 +46,7 @@ def quiet_option(f):
     return click.option('-q', '--quiet',
                         is_flag=True,
                         expose_value=False,
-                        help='Silence warnings',
+                        help='silence warnings',
                         callback=callback)(f)
 
 def verbosity_options(f):
@@ -81,19 +81,22 @@ base_options = [
 
 # options that effect output
 output_options = [
-    click.option('--http', 'http', is_flag=True, default=False, help="Use http urls i.s.o. ssh in project sourcing"),
-    click.option('--extended', '-e', 'extended', default=False, is_flag=True, help="Extended project listing (include roles)")
+    click.option('--http', 'http', is_flag=True, default=False,
+        help="use http urls in stead of ssh in project sourcing"),
+    click.option('--extended', '-e', 'extended', default=False, is_flag=True,
+        help="""override the 'mask' filter and provide all visible projects in the group"""
+        )
 ]
 
 # export specific options
 export_options = base_options + output_options + [
-    click.option('-b', '--bundles', 'bundles', is_flag=True, default=False, help="Export to bundles"),
-    click.option('--outputdir', '-o', 'outputdir', help="There the export shut be put")
+    click.option('-b', '--bundles', 'bundles', is_flag=True, default=False, help="export to bundles"),
+    click.option('--outputdir', '-o', 'outputdir', help="where the export shut be put")
 ]
 
 # setup specific options
 setup_options = base_options + output_options + [
-    click.option('--workdir', '-w', 'workdir', help="Where the group should be maintained")
+    click.option('--workdir', '-w', 'workdir', help="where the group should be maintained")
 ]
 
 # sync options
@@ -113,11 +116,13 @@ sync_local_options = base_options + [
 ]
 
 # groups options
-groups_options = [gitlab_opt]
+groups_options = [gitlab_opt] + [
+    click.option('--terse', '-t', 'terse', is_flag=True, default=False, help="terse output in command"),
+]
 
 # projects options
 projects_options = base_options + output_options + [
-    click.option('--terse', '-t', 'terse', is_flag=True, default=False, help="Terse output in command"),
+    click.option('--terse', '-t', 'terse', is_flag=True, default=False, help="terse output in command"),
 ]
 
 def add_options(options):

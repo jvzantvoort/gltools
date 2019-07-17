@@ -347,6 +347,14 @@ class QueryGitLab(object):
                 retv.append("%s" % groupsect.name)
         return sorted(retv)
 
+    @property
+    def tersegroupnames(self):
+        """return the gitlab group names visible to the user"""
+        retv = list()
+        for groupsect in self.groups:
+            retv.append("%s" % groupsect.path)
+        return sorted(retv)
+
     @staticmethod
     def getprojectmeta(project):
         """Translate the provided object in a more useable dictionary.

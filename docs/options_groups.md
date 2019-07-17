@@ -26,3 +26,7 @@ glt groups [-g|--gitlab <gitlabsection>] [-q|--quiet] [-v|--verbose]
 
   Enable verbose output
 
+- `-t, --terse`
+
+  Terse output in command this provided an undecorated version of
+  the projects useful in scripting.

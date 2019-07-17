@@ -29,5 +29,10 @@ class ListGroups(Main):
         super(ListGroups, self).__init__(**kwargs)
 
     def main(self):
-        for groupname in self.gitlab.groupnames:
-            print(groupname)
+        if self.terse:
+            for groupname in self.gitlab.tersegroupnames:
+                print(groupname)
+
+        else:
+            for groupname in self.gitlab.groupnames:
+                print(groupname)
