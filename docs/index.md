@@ -15,5 +15,6 @@ _Why the whole group?_
 > interfaces, logic, etc. but not language or development speed.
 
 [Quickstart](http://jvzantvoort.github.io/gltools/quickstart.html)
+[Options](options.md)
 
 [Changelog](https://github.com/jvzantvoort/gltools/blob/master/CHANGELOG.md)
