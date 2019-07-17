@@ -24,18 +24,13 @@ In this:
   exception of the ``mask`` option with takes a list argument.
 
 
-| Option name  | Default       | Description                                   |
-| ------------ | ------------- | --------------------------------------------- |
-| `projectdir` | `~/Workspace` | Used by e.g. ``setup`` to build the project   |
-|              |               | tree                                          |
-| `exportdir`  | `~/exports`   | Used by e.g. ``export`` to write the output   |
-|              |               | of the exports                                |
-| `tempdir`    | `~/tmp`       | Used to overrule the temporary directory      |
-| `protected`  | false         | Allows for a group to be marked read-only for |
-|              |               | transactions.                                 |
-| `mask`       |               | Patterns of projects that are omitted from    |
-|              |               | output unless the ``-e`` or ``--extended``    |
-|              |               | flag is set                                   |
+| Option name  | Default       | Description                                                                                       |
+| ------------ | ------------- | ------------------------------------------------------------------------------------------------- |
+| `projectdir` | `~/Workspace` | Used by e.g. ``setup`` to build the project tree                                                  |
+| `exportdir`  | `~/exports`   | Used by e.g. ``export`` to write the output of the exports                                        |
+| `tempdir`    | `~/tmp`       | Used to overrule the temporary directory                                                          |
+| `protected`  | false         | Allows for a group to be marked read-only for transactions.                                       |
+| `mask`       |               | Patterns of projects that are omitted from output unless the ``-e`` or ``--extended`` flag is set |
 
 
 ## Example
