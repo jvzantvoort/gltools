@@ -8,9 +8,10 @@ source tree. It's geared towards an Ansible related source tree so
 there are some tweaks supporting that (specially when exporting) but
 should work on others too.
 
-I use it at [Proxy B.V.](https://www.proxy.nl/) to manage some of our
-ansible environments.
+I wrote it initialy to help manage some of our ansible environments
+at [Proxy B.V.](https://www.proxy.nl/). It allows me to use both
+[awx/tower](https://github.com/ansible/awx) (production) and regular
+ansible use for development.
 
 [page](https://jvzantvoort.github.io/gltools/)
 
-[changelog](CHANGELOG.md)

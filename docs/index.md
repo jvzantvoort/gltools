@@ -17,4 +17,4 @@ _Why the whole group?_
 * [Quickstart](quickstart.md)
 * [Options](options.md)
 * [Config files](gltools_cfg.md)
-* [Changelog](https://github.com/jvzantvoort/gltools/blob/master/CHANGELOG.md)
+* [changelog](CHANGELOG.md)
