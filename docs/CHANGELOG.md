@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.2.6](https://github.com/jvzantvoort/gltools/tree/0.2.6) (2019-07-17)
+
+[Full Changelog](https://github.com/jvzantvoort/gltools/compare/0.2.5...0.2.6)
+
 ## [0.2.5](https://github.com/jvzantvoort/gltools/tree/0.2.5) (2019-07-17)
 
 [Full Changelog](https://github.com/jvzantvoort/gltools/compare/0.2.4...0.2.5)
