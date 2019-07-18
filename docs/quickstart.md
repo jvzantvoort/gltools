@@ -78,6 +78,21 @@ cd ~/Workspace/kitchen/
 
 Do the work including committing and pushing.
 
+**Note**: if you get ssl errors like this:
+```
+# glt groups
+.../urllib3/connectionpool.py:847: InsecureRequestWarning: Unverified HTTPS request is being made.  Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings InsecureRequestWarning)
+.../urllib3/connectionpool.py:847: InsecureRequestWarning: Unverified HTTPS request is being made.  Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings InsecureRequestWarning)
+...
+```
+
+An easy fix is adding this to your environment:
+
+```
+export PYTHONWARNINGS="ignore:Unverified HTTPS request"
+```
+
+
 ## Export the repositories for later use
 
 Use [glt export](options_export.md) to export the code.
