@@ -1,6 +1,6 @@
 Summary: GLTools a gitlab wrapper
 Name: gltools
-Version: 0.3.2
+Version: 0.3.3
 Release: 1
 Source0: %{name}-%{version}.tar.gz
 License: MIT
@@ -33,3 +33,6 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 
 %changelog
+* Wed Jul 01 2020 John van Zantvoort <john@vanzantvoort.org> 0.3.3-1
+- minor update (john@vanzantvoort.org)
+
