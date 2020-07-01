@@ -1,6 +1,6 @@
 Summary: GLTools a gitlab wrapper
 Name: gltools
-Version: 0.3.1
+Version: 0.3.2
 Release: 1
 Source0: %{name}-%{version}.tar.gz
 License: MIT
