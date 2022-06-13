@@ -8,7 +8,8 @@ from gltools.git import Git
 from gltools.config import GitLabToolsConfig
 from gltools.main.common import Main
 
-log = logging.getLogger('gltools.main.workongroup')
+log = logging.getLogger("gltools.main.workongroup")
+
 
 class WorkOnGroup(Main):
     """Setup a project directory so the user can work on it.
@@ -56,17 +57,17 @@ class WorkOnGroup(Main):
         retv = list()
 
         for row in super(WorkOnGroup, self).getprojects():
-            row['url'] = row.get('ssh_url_to_repo')
+            row["url"] = row.get("ssh_url_to_repo")
             if self.http:
-                row['url'] = row.get('http_url_to_repo')
+                row["url"] = row.get("http_url_to_repo")
 
             retv.append(row)
         return retv
 
     def setup_project(self, row):
         self.setup_group()
-        projectpath = os.path.join(self.grouppath, row.get('path'))
-        gitconfig = os.path.join(projectpath, '.git', 'config')
+        projectpath = os.path.join(self.grouppath, row.get("path"))
+        gitconfig = os.path.join(projectpath, ".git", "config")
 
         if os.path.exists(gitconfig):
             return self.update_project(row)
@@ -75,20 +76,19 @@ class WorkOnGroup(Main):
             return self.clone_project(row)
 
     def update_project(self, row):
-        projectpath = os.path.join(self.grouppath, row.get('path'))
+        projectpath = os.path.join(self.grouppath, row.get("path"))
         log.info("update path %s, START" % projectpath)
 
         log.debug("  pull last version, START")
-        self._git.git("pull", self.repository, self.refspec, "--tags",
-                      cwd=projectpath)
+        self._git.git("pull", self.repository, self.refspec, "--tags", cwd=projectpath)
 
         self._git.git("fetch", "--prune", cwd=projectpath)
         log.debug("update path %s, END" % projectpath)
 
     def clone_project(self, row):
-        projectpath = os.path.join(self.grouppath, row.get('path'))
+        projectpath = os.path.join(self.grouppath, row.get("path"))
         log.debug("clone path %s" % projectpath)
-        self._git.git("clone", row.get('url'), cwd=self.grouppath)
+        self._git.git("clone", row.get("url"), cwd=self.grouppath)
 
     def main(self):
 

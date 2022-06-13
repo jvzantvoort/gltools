@@ -9,13 +9,13 @@ import pprint
 
 from gltools.exceptions import GLToolsException, GLToolsConfigException
 
-log = logging.getLogger('gltools.localgitlab')
+log = logging.getLogger("gltools.localgitlab")
 
 try:
     import gitlab
 
 except ImportError:
-    raise GLToolsException('python-gitlab module not available')
+    raise GLToolsException("python-gitlab module not available")
 
 try:
     import ConfigParser as configparser
@@ -28,7 +28,8 @@ __copyright__ = "John van Zantvoort"
 __license__ = "proprietary"
 __version__ = "1.0.1"
 
-CONFIGFILE = os.path.expanduser('~/.python-gitlab.cfg')
+CONFIGFILE = os.path.expanduser("~/.python-gitlab.cfg")
+
 
 class GitLabInitConfig(object):
     """brief explanation
@@ -54,15 +55,14 @@ class GitLabInitConfig(object):
         self.vars = dict()
         self._args = dict()
 
-        self.globalopts = {'default': 'local',
-                           'ssl_verify': 'false',
-                           'timeout': 15}
-        self.sectionopts = {'url': 'http://localhost',
-                            'private_token': 'FIXME',
-                            'api_version': 4}
+        self.globalopts = {"default": "local", "ssl_verify": "false", "timeout": 15}
+        self.sectionopts = {
+            "url": "http://localhost",
+            "private_token": "FIXME",
+            "api_version": 4,
+        }
 
-        self.configfile = kwargs.get('configfile', CONFIGFILE)
-
+        self.configfile = kwargs.get("configfile", CONFIGFILE)
 
         self.config = configparser.RawConfigParser()
 
@@ -76,7 +76,7 @@ class GitLabInitConfig(object):
         :returns: default section
         :rtype: str
         """
-        return self.config.get('global', 'default')
+        return self.config.get("global", "default")
 
     def set(self, *args):
         """set a variable in the config
@@ -106,21 +106,22 @@ class GitLabInitConfig(object):
     def initconfig(self):
         """initialize an empty conifguration"""
 
-        if not self.config.has_section('global'):
+        if not self.config.has_section("global"):
             log.debug("adding required section 'global'")
-            self.config.add_section('global')
+            self.config.add_section("global")
 
         for varname, varval in self.globalopts.items():
             if varname in self._args:
                 log.debug(
-                    "adding %s (value: %s) to global from arguments" %
-                    (varname, self._args[varname]))
-                self.config.set('global', varname, self._args[varname])
+                    "adding %s (value: %s) to global from arguments"
+                    % (varname, self._args[varname])
+                )
+                self.config.set("global", varname, self._args[varname])
             else:
                 log.debug(
-                    "adding %s (value: %s) to global from defaults" %
-                    (varname, varval))
-                self.config.set('global', varname, varval)
+                    "adding %s (value: %s) to global from defaults" % (varname, varval)
+                )
+                self.config.set("global", varname, varval)
 
         if not self.config.has_section(self.default):
             log.debug("adding section '%s'" % self.default)
@@ -129,19 +130,22 @@ class GitLabInitConfig(object):
         for varname, varval in self.sectionopts.items():
             if varname in self._args:
                 log.debug(
-                    "adding %s (value: %s) to %s from arguments" %
-                    (varname, self._args[varname], self.default))
+                    "adding %s (value: %s) to %s from arguments"
+                    % (varname, self._args[varname], self.default)
+                )
                 self.config.set(self.default, varname, self._args[varname])
             else:
                 log.debug(
-                    "adding %s (value: %s) to %s from section opts" %
-                    (varname, varval, self.default))
+                    "adding %s (value: %s) to %s from section opts"
+                    % (varname, varval, self.default)
+                )
                 self.config.set(self.default, varname, varval)
 
     def __call__(self):
         self.initconfig()
-        with open(self.configfile, 'w') as cfgh:
+        with open(self.configfile, "w") as cfgh:
             self.config.write(cfgh)
+
 
 class GitLabConfig(object):
     """Handle the gitlab config file
@@ -163,17 +167,18 @@ class GitLabConfig(object):
       config = GitLabConfig()
 
     """
+
     def __init__(self, **kwargs):
 
         self.vars = dict()
         self._args = dict()
 
-        self.globalopts = {'default': 'local',
-                           'ssl_verify': 'false',
-                           'timeout': 15}
-        self.sectionopts = {'url': 'http://localhost',
-                            'private_token': 'FIXME',
-                            'api_version': 4}
+        self.globalopts = {"default": "local", "ssl_verify": "false", "timeout": 15}
+        self.sectionopts = {
+            "url": "http://localhost",
+            "private_token": "FIXME",
+            "api_version": 4,
+        }
 
         self.configfile = CONFIGFILE
 
@@ -191,7 +196,7 @@ class GitLabConfig(object):
         :returns: default section
         :rtype: str
         """
-        return self.config.get('global', 'default')
+        return self.config.get("global", "default")
 
     def loadconfig(self):
         """load the content from the configfile. If none exists a dummy will be
@@ -202,16 +207,21 @@ class GitLabConfig(object):
         """
 
         if not os.path.exists(self.configfile):
-            raise GLToolsConfigException("required configfile %s does not exist" % self.configfile)
+            raise GLToolsConfigException(
+                "required configfile %s does not exist" % self.configfile
+            )
 
         if not self.config.read(self.configfile):
-            raise GLToolsConfigException("failed to read configfile %s\n" % self.configfile)
-
-        private_token = self.config.get(self.default, 'private_token')
-
-        if private_token == 'FIXME':
             raise GLToolsConfigException(
-                "provided configfile %s is not valid, perhaps new?\n" % self.configfile)
+                "failed to read configfile %s\n" % self.configfile
+            )
+
+        private_token = self.config.get(self.default, "private_token")
+
+        if private_token == "FIXME":
+            raise GLToolsConfigException(
+                "provided configfile %s is not valid, perhaps new?\n" % self.configfile
+            )
 
     @property
     def configs(self):
@@ -219,10 +229,11 @@ class GitLabConfig(object):
         :returns: list of configurations
         :rtype: list of str
         """
-        return [x for x in self.config.sections() if x != 'global']
+        return [x for x in self.config.sections() if x != "global"]
 
     def has_section(self, section):
         return self.config.has_section(section)
+
 
 class QueryGitLab(object):
     """Wrapper for the ``gitlab`` library
@@ -249,19 +260,18 @@ class QueryGitLab(object):
         self._gitlab = None
         self.config = GitLabConfig()
 
-        props = ('configname', 'groupname')
+        props = ("configname", "groupname")
         for prop in props:
             pname = "_" + prop
             if prop in kwargs:
                 setattr(self, pname, kwargs[prop])
 
-
     def connect(self, configname):
         """(re)connect to server and refresh the groups list"""
-        log.debug('connect to %s, start' % configname)
+        log.debug("connect to %s, start" % configname)
         self._gitlab = gitlab.Gitlab.from_config(self.configname)
         self._groups = [grp for grp in self.gitlab.groups.list(all=True)]
-        log.debug('connect to %s, end' % configname)
+        log.debug("connect to %s, end" % configname)
 
     # used
     @property
@@ -391,19 +401,19 @@ class QueryGitLab(object):
         retv = dict()
 
         attributes = project.attributes
-        namespace = attributes.get('namespace')
+        namespace = attributes.get("namespace")
 
-        retv['group_id'] = namespace.get('id')
-        retv['group_name'] = namespace.get('name')
-        retv['group_path'] = namespace.get('full_path')
+        retv["group_id"] = namespace.get("id")
+        retv["group_name"] = namespace.get("name")
+        retv["group_path"] = namespace.get("full_path")
 
-        retv['name'] = attributes.get('name')
-        retv['description'] = attributes.get('description')
-        retv['http_url_to_repo'] = attributes.get('http_url_to_repo')
-        retv['id'] = attributes.get('id')
-        retv['path'] = attributes.get('path')
-        retv['path_with_namespace'] = attributes.get('path_with_namespace')
-        retv['ssh_url_to_repo'] = attributes.get('ssh_url_to_repo')
+        retv["name"] = attributes.get("name")
+        retv["description"] = attributes.get("description")
+        retv["http_url_to_repo"] = attributes.get("http_url_to_repo")
+        retv["id"] = attributes.get("id")
+        retv["path"] = attributes.get("path")
+        retv["path_with_namespace"] = attributes.get("path_with_namespace")
+        retv["ssh_url_to_repo"] = attributes.get("ssh_url_to_repo")
         return retv
 
     def getgroup(self, groupname):
@@ -429,7 +439,7 @@ class QueryGitLab(object):
         :type groupname: str
         """
         retv = list()
-        log.debug('lookup projects for %s' % groupname)
+        log.debug("lookup projects for %s" % groupname)
         obj = self.getgroup(groupname)
         if obj is None:
             raise GLToolsException("Could not find group %s" % groupname)
@@ -437,6 +447,7 @@ class QueryGitLab(object):
         for project in obj.projects.list(all=True):
             retv.append(self.getprojectmeta(project))
         return retv
+
 
 class MirrorGitLab(object):
     """Wrapper for the ``gitlab`` library
@@ -503,25 +514,33 @@ class MirrorGitLab(object):
         if len(objects) == 1:
             return objects[0]
 
-        raise GLToolsException("search for %s in %s yields multiple results" %
-                               (groupname, servername))
+        raise GLToolsException(
+            "search for %s in %s yields multiple results" % (groupname, servername)
+        )
 
     def mirror_to_local(self, src_group, basedir):
         srcgrpobj = self.get_group_obj(self.source, src_group)
         retv = list()
 
         for srcproj in srcgrpobj.projects.list(all=True):
-            tmpproj = {'namespace_id': srcgrpobj.id, 'basedir': basedir}
+            tmpproj = {"namespace_id": srcgrpobj.id, "basedir": basedir}
 
-            for keyn in ['description', 'group_id', 'http_url_to_repo', 'id',
-                         'name', 'name_with_namespace', 'path',
-                         'path_with_namespace', 'ssh_url_to_repo']:
+            for keyn in [
+                "description",
+                "group_id",
+                "http_url_to_repo",
+                "id",
+                "name",
+                "name_with_namespace",
+                "path",
+                "path_with_namespace",
+                "ssh_url_to_repo",
+            ]:
                 tmpproj[keyn] = srcproj.attributes.get(keyn)
 
             retv.append(tmpproj)
 
         return retv
-
 
     def mirror_groups(self, src_group, dst_group):
         srcgrpobj = self.get_group_obj(self.source, src_group)
@@ -534,13 +553,13 @@ class MirrorGitLab(object):
 
         for srcproj in srcprojs:
             project = dict()
-            path = srcproj.attributes.get('path')
-            name = srcproj.attributes.get('name')
-            url = srcproj.attributes.get('ssh_url_to_repo')
-            project['name'] = name
-            project['path'] = path
-            project['description'] = srcproj.attributes.get('description')
-            project['namespace_id'] = dstgrpobj.id
+            path = srcproj.attributes.get("path")
+            name = srcproj.attributes.get("name")
+            url = srcproj.attributes.get("ssh_url_to_repo")
+            project["name"] = name
+            project["path"] = path
+            project["description"] = srcproj.attributes.get("description")
+            project["namespace_id"] = dstgrpobj.id
             projects.append(project)
             srcurls[path] = url
 
@@ -552,7 +571,7 @@ class MirrorGitLab(object):
 
             except gitlab.exceptions.GitlabCreateError as err:
                 try:
-                    message = " ".join(err.error_message['name'])
+                    message = " ".join(err.error_message["name"])
 
                 except IndexError:
                     message = err
@@ -560,7 +579,7 @@ class MirrorGitLab(object):
                 except KeyError:
                     message = err
 
-                projectdef['error'] = message
+                projectdef["error"] = message
                 log.warn("failed to create %(name)s: %(error)s" % projectdef)
 
         log.info("create remote projects, end")
@@ -570,13 +589,21 @@ class MirrorGitLab(object):
 
         for dstproj in dstgrpobj.projects.list(all=True):
             tmpdict = dict()
-            for keyn in ['description', 'group_id', 'http_url_to_repo', 'id',
-                         'name', 'name_with_namespace', 'path',
-                         'path_with_namespace', 'ssh_url_to_repo']:
+            for keyn in [
+                "description",
+                "group_id",
+                "http_url_to_repo",
+                "id",
+                "name",
+                "name_with_namespace",
+                "path",
+                "path_with_namespace",
+                "ssh_url_to_repo",
+            ]:
                 tmpdict[keyn] = dstproj.attributes.get(keyn)
 
-            path = tmpdict.get('path')
-            tmpdict['src_ssh_url_to_repo'] = srcurls.get(path)
+            path = tmpdict.get("path")
+            tmpdict["src_ssh_url_to_repo"] = srcurls.get(path)
 
             retv.append(tmpdict)
         log.info("reload remote project configuration, end")

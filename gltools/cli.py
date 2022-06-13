@@ -7,14 +7,23 @@ import os.path
 import logging
 import click
 from gltools.exceptions import GLToolsException, GLToolsConfigException
-from gltools.main import ExportGroup, WorkOnGroup, SyncGroup, ListProjects, ListGroups, InitConfig, SyncGroupLocal
+from gltools.main import (
+    ExportGroup,
+    WorkOnGroup,
+    SyncGroup,
+    ListProjects,
+    ListGroups,
+    InitConfig,
+    SyncGroupLocal,
+)
 from gltools.version import __version__
 from gltools.localgitlab import GitLabConfig
+
 
 class State(object):
     """Maintain logging level."""
 
-    def __init__(self, log_name='gltools', level=logging.INFO):
+    def __init__(self, log_name="gltools", level=logging.INFO):
         self.logger = logging.getLogger(log_name)
         self.logger.propagate = False
         stream = logging.StreamHandler()
@@ -24,38 +33,51 @@ class State(object):
 
         self.logger.setLevel(level)
 
+
 # pylint: disable=C0103
 pass_state = click.make_pass_decorator(State, ensure=True)
+
 
 def verbose_option(f):
     def callback(ctx, param, value):
         state = ctx.ensure_object(State)
         if value:
             state.logger.setLevel(logging.DEBUG)
-    return click.option('-v', '--verbose',
-                        is_flag=True,
-                        expose_value=False,
-                        help='enable verbose output',
-                        callback=callback)(f)
+
+    return click.option(
+        "-v",
+        "--verbose",
+        is_flag=True,
+        expose_value=False,
+        help="enable verbose output",
+        callback=callback,
+    )(f)
+
 
 def quiet_option(f):
     def callback(ctx, param, value):
         state = ctx.ensure_object(State)
         if value:
             state.logger.setLevel(logging.ERROR)
-    return click.option('-q', '--quiet',
-                        is_flag=True,
-                        expose_value=False,
-                        help='silence warnings',
-                        callback=callback)(f)
+
+    return click.option(
+        "-q",
+        "--quiet",
+        is_flag=True,
+        expose_value=False,
+        help="silence warnings",
+        callback=callback,
+    )(f)
+
 
 def verbosity_options(f):
     f = verbose_option(f)
     f = quiet_option(f)
     return f
 
+
 # attempt to get a default from the config
-DEFAULT_GITLAB_SECTION = 'local'
+DEFAULT_GITLAB_SECTION = "local"
 GITLAB_CONFIGS = list()
 
 try:
@@ -66,82 +88,152 @@ except GLToolsConfigException:
     pass
 
 
-gitlab_opt = click.option('--gitlab', '-g', 'gitlab_config_section',
-                          help="which configuration section should be used" +
-                          " (default: %s)" % DEFAULT_GITLAB_SECTION,
-                          metavar="GITLABSECTION",
-                          default=DEFAULT_GITLAB_SECTION)
+gitlab_opt = click.option(
+    "--gitlab",
+    "-g",
+    "gitlab_config_section",
+    help="which configuration section should be used"
+    + " (default: %s)" % DEFAULT_GITLAB_SECTION,
+    metavar="GITLABSECTION",
+    default=DEFAULT_GITLAB_SECTION,
+)
 
 
 # base options for all
 base_options = [
     gitlab_opt,
-    click.argument('srcgroupname', nargs=1, required=True, type=str, metavar='GITLABGROUPNAME')
+    click.argument(
+        "srcgroupname", nargs=1, required=True, type=str, metavar="GITLABGROUPNAME"
+    ),
 ]
 
 # options that effect output
 output_options = [
-    click.option('--http', 'http', is_flag=True, default=False,
-        help="use http urls in stead of ssh in project sourcing"),
-    click.option('--extended', '-e', 'extended', default=False, is_flag=True,
-        help="""override the 'mask' filter and provide all visible projects in the group"""
-        )
+    click.option(
+        "--http",
+        "http",
+        is_flag=True,
+        default=False,
+        help="use http urls in stead of ssh in project sourcing",
+    ),
+    click.option(
+        "--extended",
+        "-e",
+        "extended",
+        default=False,
+        is_flag=True,
+        help="""override the 'mask' filter and provide all visible projects in the group""",
+    ),
 ]
 
 # export specific options
-export_options = base_options + output_options + [
-    click.option('-b', '--bundles', 'bundles', is_flag=True, default=False, help="export to bundles"),
-    click.option('--outputdir', '-o', 'outputdir', help="where the export shut be put")
-]
+export_options = (
+    base_options
+    + output_options
+    + [
+        click.option(
+            "-b",
+            "--bundles",
+            "bundles",
+            is_flag=True,
+            default=False,
+            help="export to bundles",
+        ),
+        click.option(
+            "--outputdir", "-o", "outputdir", help="where the export shut be put"
+        ),
+    ]
+)
 
 # setup specific options
-setup_options = base_options + output_options + [
-    click.option('--workdir', '-w', 'workdir', help="where the group should be maintained")
-]
+setup_options = (
+    base_options
+    + output_options
+    + [
+        click.option(
+            "--workdir", "-w", "workdir", help="where the group should be maintained"
+        )
+    ]
+)
 
 # sync options
 sync_options = base_options + [
-    click.argument('dstgroupname', nargs=1, required=True, type=str, metavar='DESTGROUPNAME'),
-    click.option('--dest-gitlab', '-G', 'dst_gitlab_config_section',
-                              help="which configuration section should be used" +
-                              " as destination for sync" +
-                              " (default: %s)" % DEFAULT_GITLAB_SECTION,
-                              metavar="DESTGITLABSECTION",
-                              default=DEFAULT_GITLAB_SECTION)
+    click.argument(
+        "dstgroupname", nargs=1, required=True, type=str, metavar="DESTGROUPNAME"
+    ),
+    click.option(
+        "--dest-gitlab",
+        "-G",
+        "dst_gitlab_config_section",
+        help="which configuration section should be used"
+        + " as destination for sync"
+        + " (default: %s)" % DEFAULT_GITLAB_SECTION,
+        metavar="DESTGITLABSECTION",
+        default=DEFAULT_GITLAB_SECTION,
+    ),
 ]
 
 # sync local options
 sync_local_options = base_options + [
-    click.argument('dstdirectory', nargs=1, required=True, type=str, default=os.path.expanduser('~'), metavar='DESTDIR')
+    click.argument(
+        "dstdirectory",
+        nargs=1,
+        required=True,
+        type=str,
+        default=os.path.expanduser("~"),
+        metavar="DESTDIR",
+    )
 ]
 
 # groups options
 groups_options = [gitlab_opt] + [
-    click.option('--terse', '-t', 'terse', is_flag=True, default=False, help="terse output in command"),
+    click.option(
+        "--terse",
+        "-t",
+        "terse",
+        is_flag=True,
+        default=False,
+        help="terse output in command",
+    ),
 ]
 
 # projects options
-projects_options = base_options + output_options + [
-    click.option('--terse', '-t', 'terse', is_flag=True, default=False, help="terse output in command"),
-]
+projects_options = (
+    base_options
+    + output_options
+    + [
+        click.option(
+            "--terse",
+            "-t",
+            "terse",
+            is_flag=True,
+            default=False,
+            help="terse output in command",
+        ),
+    ]
+)
+
 
 def add_options(options):
-    """ Given a list of click options this creates a decorator that
+    """Given a list of click options this creates a decorator that
     will return a function used to add the options to a click command.
     :param options: a list of click.options decorator.
     """
+
     def _add_options(func):
-        """ Given a click command and a list of click options this will
+        """Given a click command and a list of click options this will
         return the click command decorated with all the options in the list.
         :param func: a click command function.
         """
         for option in reversed(options):
             func = option(func)
         return func
+
     return _add_options
 
-@click.group(context_settings={'help_option_names': ['-h', '--help']})
-@click.version_option(__version__, '-V', '--version')
+
+@click.group(context_settings={"help_option_names": ["-h", "--help"]})
+@click.version_option(__version__, "-V", "--version")
 def cli():
     """
     GitLab tools
@@ -187,6 +279,7 @@ def sync(**kwargs):
     except GLToolsException as exp:
         raise SystemExit("\n" + str(exp))
 
+
 @cli.command(name="synclocal")
 @add_options(sync_local_options)
 @verbosity_options
@@ -198,6 +291,7 @@ def sync(**kwargs):
 
     except GLToolsException as exp:
         raise SystemExit("\n" + str(exp))
+
 
 @cli.command(name="groups")
 @add_options(groups_options)
@@ -211,6 +305,7 @@ def groups(**kwargs):
     except GLToolsException as exp:
         raise SystemExit("\n" + str(exp))
 
+
 @cli.command(name="projects")
 @add_options(projects_options)
 @verbosity_options
@@ -222,6 +317,7 @@ def projects(**kwargs):
 
     except GLToolsException as exp:
         raise SystemExit("\n" + str(exp))
+
 
 @cli.command(name="init")
 @add_options([gitlab_opt])
@@ -235,4 +331,3 @@ def init_gitlab_config(**kwargs):
 
     except GLToolsException as exp:
         raise SystemExit("\n" + str(exp))
-

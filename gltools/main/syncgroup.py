@@ -14,7 +14,7 @@ from gltools.localgitlab import MirrorGitLab
 from gltools.config import GitLabToolsConfig
 from gltools.exceptions import GLToolsException
 
-log = logging.getLogger('gltools.syncgroup')
+log = logging.getLogger("gltools.syncgroup")
 
 __author__ = "John van Zantvoort"
 __copyright__ = "Proxy B.V."
@@ -40,21 +40,23 @@ class SyncGroup(Main):
     def __init__(self, **kwargs):
         super(SyncGroup, self).__init__(**kwargs)
 
-        self.srcconfig = GitLabToolsConfig(servername=self.gitlab_config_section,
-                                           groupname=self.srcgroupname)
+        self.srcconfig = GitLabToolsConfig(
+            servername=self.gitlab_config_section, groupname=self.srcgroupname
+        )
 
-        self.dstconfig = GitLabToolsConfig(servername=self.dst_gitlab_config_section,
-                                           groupname=self.dstgroupname)
+        self.dstconfig = GitLabToolsConfig(
+            servername=self.dst_gitlab_config_section, groupname=self.dstgroupname
+        )
 
         self.repository = "source"
         self.refspec = "master"
 
-        self._scripttemplate = pkgutil.get_data(__package__, 'sync.sh')
+        self._scripttemplate = pkgutil.get_data(__package__, "sync.sh")
 
     def sync_project(self, row, tempdir):
-        row['tempdir'] = tempdir
-        row['branch'] = self.refspec
-        row['source'] = self.repository
+        row["tempdir"] = tempdir
+        row["branch"] = self.refspec
+        row["source"] = self.repository
         log.info("%(name)s" % row)
         log.debug("sync %(name)s, start" % row)
         scriptname = "%(path)s.sh" % row
@@ -69,7 +71,7 @@ class SyncGroup(Main):
         log.debug("export %(name)s, end" % row)
 
     def main(self):
-        tempdir = self.mktemp('_sync')
+        tempdir = self.mktemp("_sync")
 
         if not self.srcconfig.protected:
             log.warn("%s should be protected in gltools config" % self.srcgroupname)
@@ -84,28 +86,29 @@ class SyncGroup(Main):
         for row in mirrordata:
             self.sync_project(row, tempdir)
 
-class SyncGroupLocal(Main):
 
+class SyncGroupLocal(Main):
     def __init__(self, **kwargs):
         super(SyncGroupLocal, self).__init__(**kwargs)
 
-        self.srcconfig = GitLabToolsConfig(servername=self.gitlab_config_section,
-                                           groupname=self.srcgroupname)
+        self.srcconfig = GitLabToolsConfig(
+            servername=self.gitlab_config_section, groupname=self.srcgroupname
+        )
 
         self.repository = "source"
         self.refspec = "master"
-        # self.dstdirectory 
+        # self.dstdirectory
 
-        self._scripttemplate = pkgutil.get_data(__package__, 'synclocal.sh')
+        self._scripttemplate = pkgutil.get_data(__package__, "synclocal.sh")
 
     def sync_project(self, row, tempdir):
 
         scriptname = "%(path)s.sh" % row
         outfile = os.path.join(tempdir, scriptname)
 
-        row['tempdir'] = tempdir
-        row['branch'] = self.refspec
-        row['source'] = self.repository
+        row["tempdir"] = tempdir
+        row["branch"] = self.refspec
+        row["source"] = self.repository
 
         log.info("%(name)s" % row)
         log.debug("sync %(name)s, start" % row)
@@ -119,7 +122,7 @@ class SyncGroupLocal(Main):
         log.debug("export %(name)s, end" % row)
 
     def main(self):
-        tempdir = self.mktemp('_synclocal')
+        tempdir = self.mktemp("_synclocal")
 
         if not self.srcconfig.protected:
             log.warn("%s should be protected in gltools config" % self.srcgroupname)

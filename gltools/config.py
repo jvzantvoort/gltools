@@ -8,9 +8,10 @@ import os
 import logging
 import copy
 
-log = logging.getLogger('gltools.config')
+log = logging.getLogger("gltools.config")
 
 from yaml import load, dump
+
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
@@ -19,7 +20,8 @@ except ImportError:
 from .exceptions import GLToolsException
 from .localgitlab import GitLabConfig
 
-GLTCONFIGFILE = os.path.expanduser('~/.gltools.cfg')
+GLTCONFIGFILE = os.path.expanduser("~/.gltools.cfg")
+
 
 class GitLabToolsConfig(object):
     """Provides configuration defaults and overrides for projects.
@@ -60,7 +62,7 @@ class GitLabToolsConfig(object):
           exportdir: /staging
           mask:
             - "^role-.*$"
-      
+
       proxy:
         default:
           projectdir: /encrypted/proxy
@@ -69,21 +71,22 @@ class GitLabToolsConfig(object):
     def __init__(self, **kwargs):
         self.configdata = dict()
         self._cache = dict()
-        self._defaults = {'projectdir': os.path.expanduser('~/Workspace'),
-                          'exportdir': os.path.expanduser('~/exports'),
-                          'tempdir': os.path.expanduser('~/tmp'),
-                          'protected': False}
+        self._defaults = {
+            "projectdir": os.path.expanduser("~/Workspace"),
+            "exportdir": os.path.expanduser("~/exports"),
+            "tempdir": os.path.expanduser("~/tmp"),
+            "protected": False,
+        }
 
-
-        self.servername = kwargs.get('servername', self.glconfig_default())
-        self.groupname = kwargs.get('groupname')
-        self.configfile = kwargs.get('configfile', GLTCONFIGFILE)
+        self.servername = kwargs.get("servername", self.glconfig_default())
+        self.groupname = kwargs.get("groupname")
+        self.configfile = kwargs.get("configfile", GLTCONFIGFILE)
 
         self.loadconfig()
 
     @staticmethod
     def glconfig_default():
-        retv = 'local'
+        retv = "local"
         try:
             glc = GitLabConfig()
             retv = glc.default
@@ -116,8 +119,8 @@ class GitLabToolsConfig(object):
         # setup the defaults
         self._cache = copy.deepcopy(self._defaults)
 
-        if 'default' in tmpdict:
-            for k, v in tmpdict['default'].items():
+        if "default" in tmpdict:
+            for k, v in tmpdict["default"].items():
                 self._cache[k] = v
         if self.groupname is not None:
             if self.groupname in tmpdict:
@@ -127,21 +130,20 @@ class GitLabToolsConfig(object):
 
     @property
     def projectdir(self):
-        return self.config.get('projectdir')
+        return self.config.get("projectdir")
 
     @property
     def exportdir(self):
-        return self.config.get('exportdir')
+        return self.config.get("exportdir")
 
     @property
     def tempdir(self):
-        return self.config.get('tempdir')
+        return self.config.get("tempdir")
 
     @property
     def mask(self):
-        return self.config.get('mask')
+        return self.config.get("mask")
 
     @property
     def protected(self):
-        return self.config.get('protected')
-
+        return self.config.get("protected")

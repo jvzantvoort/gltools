@@ -8,10 +8,10 @@ import logging
 import pkgutil
 from gltools.main.common import Main
 
-log = logging.getLogger('gltools.main.exportgroup')
+log = logging.getLogger("gltools.main.exportgroup")
+
 
 class ExportGroup(Main):
-
     def __init__(self, **kwargs):
         self.tempdir = None
 
@@ -23,17 +23,16 @@ class ExportGroup(Main):
         if self.tempdir is None:
             self.tempdir = self.gltcfg.tempdir
 
-        self._scripttemplate = pkgutil.get_data(__package__, 'export.sh')
-
+        self._scripttemplate = pkgutil.get_data(__package__, "export.sh")
 
     def export_project(self, row, outputdir, tempdir):
-        row['outputdir'] = outputdir
-        row['tempdir'] = tempdir
+        row["outputdir"] = outputdir
+        row["tempdir"] = tempdir
 
         log.info("%(name)s" % row)
         log.debug("export %(name)s, start" % row)
         scriptname = "%(group_path)s_%(name)s.sh" % row
-        scriptname = scriptname.lower().replace(' ', '_')
+        scriptname = scriptname.lower().replace(" ", "_")
         outfile = os.path.join(tempdir, scriptname)
         log.debug("  wrote scriptfile: %s" % outfile)
         with open(outfile, "w") as ofh:
@@ -49,13 +48,13 @@ class ExportGroup(Main):
 
         for row in super(ExportGroup, self).getprojects():
 
-            row['type'] = "portable"
+            row["type"] = "portable"
             if self.bundles:
-                row['type'] = "bundle"
+                row["type"] = "bundle"
 
-            row['url'] = row.get('ssh_url_to_repo')
+            row["url"] = row.get("ssh_url_to_repo")
             if self.http:
-                row['url'] = row.get('http_url_to_repo')
+                row["url"] = row.get("http_url_to_repo")
 
             retv.append(row)
         return retv
@@ -68,9 +67,9 @@ class ExportGroup(Main):
         except OSError as err:
             pass
 
-        tempdir = tempfile.mkdtemp(suffix='_export',
-                                   prefix=self.srcgroupname + "_",
-                                   dir=self.tempdir)
+        tempdir = tempfile.mkdtemp(
+            suffix="_export", prefix=self.srcgroupname + "_", dir=self.tempdir
+        )
 
         for row in self.getprojects():
             self.export_project(row, self.outputdir, tempdir)

@@ -11,6 +11,7 @@ class GLToolsException(Exception):
     :param message: the error message
     :returns: Formatted exception message
     """
+
     def __init__(self, message):
         self.message = message
         Exception.__init__(self)
@@ -18,12 +19,14 @@ class GLToolsException(Exception):
     def __str__(self):
         return "GLTools Error %s" % self.message
 
+
 class GLToolsConfigException(Exception):
     """
 
     :param message: the error message
     :returns: Formatted exception message
     """
+
     def __init__(self, message):
         self.message = message
         Exception.__init__(self)

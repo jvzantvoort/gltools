@@ -5,10 +5,10 @@ import logging
 
 from .exceptions import GLToolsException
 
-log = logging.getLogger('gltools.git')
+log = logging.getLogger("gltools.git")
+
 
 class Git(object):
-
     def __init__(self, **kwargs):
         self._topdir = None
         self._path = None
@@ -102,20 +102,20 @@ class Git(object):
         """
         retv = list()
         command = list()
-        command.append(self.which('git'))
+        command.append(self.which("git"))
         # pylint: disable=W0106
         [command.append(x) for x in args]
         # pylint: enable=W0106
 
-        cmd_args = {'stderr': subprocess.STDOUT, 'stdout': subprocess.PIPE}
+        cmd_args = {"stderr": subprocess.STDOUT, "stdout": subprocess.PIPE}
         for kname, kvalue in kwargs.items():
             cmd_args[kname] = kvalue
 
         process = subprocess.Popen(command, **cmd_args)
         stdoutdata, stderrdata = process.communicate()
         if len(stdoutdata.strip()) > 0:
-            for line in stdoutdata.split('\n'):
-                line = line.strip('\n')
+            for line in stdoutdata.split("\n"):
+                line = line.strip("\n")
                 log.debug(line)
                 retv.append(line)
         returncode = process.returncode

@@ -8,14 +8,14 @@ import logging
 from gltools.main.common import Main
 from gltools.localgitlab import QueryGitLab, GitLabInitConfig
 
-log = logging.getLogger('gltools.projects')
+log = logging.getLogger("gltools.projects")
 
 __author__ = "John van Zantvoort"
 __copyright__ = "Proxy B.V."
 __email__ = "john.van.zantvoort@proxy.nl"
 
-class InitConfig(Main):
 
+class InitConfig(Main):
     def __init__(self, **kwargs):
         super(InitConfig, self).__init__(**kwargs)
 
@@ -28,4 +28,3 @@ class InitConfig(Main):
             raise SystemExit("file exists %s" % configfile)
 
         self._gltinitconfig()
-

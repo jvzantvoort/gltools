@@ -7,14 +7,14 @@ import os
 import logging
 from gltools.main.common import Main
 
-log = logging.getLogger('gltools.projects')
+log = logging.getLogger("gltools.projects")
 
 __author__ = "John van Zantvoort"
 __copyright__ = "Proxy B.V."
 __email__ = "john.van.zantvoort@proxy.nl"
 
-class ListProjects(Main):
 
+class ListProjects(Main):
     def __init__(self, **kwargs):
         super(ListProjects, self).__init__(**kwargs)
         self.description_max_lenght = 40
@@ -27,13 +27,13 @@ class ListProjects(Main):
         for row in rows:
             tmpdict = dict()
             for keyn in row.keys():
-                keyv = str(row.get(keyn, ''))
-                if keyv == 'None':
-                    keyv = ''
-                if keyn == 'description':
-                    keyv = keyv.replace('\n', ' ')
+                keyv = str(row.get(keyn, ""))
+                if keyv == "None":
+                    keyv = ""
+                if keyn == "description":
+                    keyv = keyv.replace("\n", " ")
                     if len(keyv) >= self.description_max_lenght:
-                        n = self.description_max_lenght -4
+                        n = self.description_max_lenght - 4
                         keyv = keyv[:n] + " ..."
 
                 tmpdict[keyn] = keyv
@@ -52,11 +52,10 @@ class ListProjects(Main):
             print(fmt % row)
 
     def main(self):
-        legend = ['name']
+        legend = ["name"]
         if not self.terse:
-            legend.append('url')
-            legend.append('description')
+            legend.append("url")
+            legend.append("description")
 
         rows = super(ListProjects, self).getprojects()
         self.tabulate(legend, rows)
-

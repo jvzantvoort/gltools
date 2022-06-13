@@ -9,11 +9,12 @@ from gltools.main.common import Main
 from gltools.localgitlab import QueryGitLab
 from gltools.exceptions import GLToolsException
 
-log = logging.getLogger('gltools.main.groups')
+log = logging.getLogger("gltools.main.groups")
 
 __author__ = "John van Zantvoort"
 __copyright__ = "Proxy B.V."
 __email__ = "john.van.zantvoort@proxy.nl"
+
 
 class ListGroups(Main):
     """List the groups on the gitlab server
